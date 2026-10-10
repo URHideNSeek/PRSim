@@ -46,7 +46,7 @@ def evaluate(s:Scenario):
     radar_avail=clip(s.illumination*(1-s.fail)) if s.radar_on else 0.
     # Combine normalized availability assumptions without double counting the outage.
     aux=clip(max(rf,audio))
-    fused_avail=clip((radar_avail+.35*aux)*(1-s.fail))
+    fused_avail=clip(((s.illumination if s.radar_on else 0.)+.35*aux)*(1-s.fail))
     def measures(score,availability):
         active=[(wd,s.radar_on),(wr,s.rf_on and s.emits),(wa,s.acoustic_on)]
         robustness=sum(v for v,on in active if on)/max(1,sum(on for _,on in active))
