@@ -17,6 +17,8 @@ def test_motion_state_is_recorded_and_not_falsely_calibrated():
             assert out["motion"]["speed_mps"]==speed
             assert out["motion"]["heading_deg"]==heading
             assert out["motion"]["model_status"]=="not calibrated"
+            assert out["motion"]["speed_definition"]=="horizontal ground speed"
+            assert "0 away, 180 toward" in out["motion"]["heading_reference"]
             assert out["fused"]==reference["fused"]
             assert out["detected"]==reference["detected"]
 
@@ -28,3 +30,10 @@ def test_ui_motion_and_probability_present():
     research=Path("pages/01_Research_Validation.py").read_text(encoding="utf-8")
     assert "Synthetic detection probability" in research
     assert "Synthetic false-alarm probability" in research
+
+def test_motion_ui_labels():
+    for path in ["app.py","pages/01_Research_Validation.py"]:
+        text=Path(path).read_text(encoding="utf-8")
+        assert "Target ground speed (m/s)" in text
+        assert "Target heading relative to sensor (degrees)" in text
+        assert "0°" in text and "180°" in text
