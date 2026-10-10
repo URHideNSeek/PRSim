@@ -13,6 +13,8 @@ CASES=[
  ("emits",False,True,"rf","up"),
  ("audio",45,75,"acoustic","up"),
  ("range_m",100,1500,"fused","down"),
+ ("speed_mps",0,50,"motion.speed_mps","up"),
+ ("heading_deg",0,360,"motion.heading_deg","up"),
  ("observation",1,60,"fused_metrics.Latency proxy (s)","up"),
  ("update",.1,5.,"fused_metrics.Latency proxy (s)","up"),
  ("fusion_weight",0.,1.,"fused","up"),
