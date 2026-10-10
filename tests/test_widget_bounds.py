@@ -3,7 +3,7 @@ import ast
 from pathlib import Path
 import pytest
 
-PAGES=["app.py","pages/01_Research_Validation.py","pages/02_Design_Space.py","pages/03_Evidence_Calibration.py"]
+PAGES=["PRSim.py","pages/01_Research_Validation.py","pages/02_Design_Space.py","pages/03_Evidence_Calibration.py"]
 WIDGETS={"slider","select_slider","selectbox","number_input","checkbox"}
 
 def literals(node):
@@ -59,7 +59,7 @@ def test_monte_carlo_trial_presets_are_consistent():
         assert "value=1500" in source
 
 def test_uncalibrated_inputs_are_explicitly_labeled():
-    main=Path("app.py").read_text(encoding="utf-8")
+    main=Path("PRSim.py").read_text(encoding="utf-8")
     validation=Path("pages/01_Research_Validation.py").read_text(encoding="utf-8")
     assert "not yet used in detection calculations" in main
     assert "not yet connected to the detection model" in main
