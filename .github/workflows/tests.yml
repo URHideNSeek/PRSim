@@ -13,4 +13,4 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install -r requirements.txt pytest
       - run: python -m pytest -q tests/
-      - run: python -m compileall -q app.py model.py optimization.py pages/
+      - run: python -m compileall -q app.py PRSim.py model.py optimization.py pages/
