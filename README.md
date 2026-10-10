@@ -15,3 +15,6 @@ Choose weather (clear, aircraft inside cloud, light/heavy rain, snow, high wind)
 ## Files
 - `app.py` — Streamlit UI and synthetic assessment engine
 - `requirements.txt` — runtime dependencies
+
+## Research validation page
+Run the app and select **Research Validation** from the Streamlit page navigation. It provides reproducible synthetic Monte Carlo comparisons, ROC curves, 95% Wilson sampling intervals, and separate SAR/GMTI evidence checklists. Weather, RCS and dB choices on this page are metadata only; they are not mapped to calibrated propagation. Do not interpret synthetic Pd as measured performance.
