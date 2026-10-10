@@ -40,3 +40,14 @@ The main Streamlit page and Research Validation page now include target speed (0
 The Research Validation page prominently reports **synthetic detection probability** and **synthetic false-alarm probability** from repeated target-present and target-absent trials. These values are not validated for the selected aircraft, weather, distance, speed, or heading. The main dashboard continues to show a synthetic threshold decision rather than a physical detection claim.
 
 Motion regression tests cover all allowed boundary values and representative headings, and assert that unsupported motion effects are not silently invented.
+
+## UI control audit (October 2026)
+
+- Target sensor-relative heading now uses 0–345° at 15° steps (24 unique directions; 360° duplicates 0°).
+- Both Monte Carlo pages offer the same trial-count presets: 100, 500, 1,000, 1,500, 3,000, 5,000, with 1,500 as the default.
+- Automated static widget checks cover valid min/max/default/step values, unique keyword arguments, matching presets, and warnings about controls that are not calibrated.
+- Existing researcher-requested RCS (0.05–1 m² at 0.05 steps) and target distance (0–500 m at 25 m steps) are retained. The 0 m distance is a mathematical UI endpoint, not a valid propagation geometry.
+- Weather, RCS, acoustic level, distance, speed, and heading still do not modify the separate Research Validation Monte Carlo distributions. A scenario preview responds to supported heuristic inputs, while motion remains recorded metadata.
+- At low Monte Carlo sample counts, small target false-alarm probabilities have high uncertainty. No numeric output is evidence of field detection until independently validated.
+
+Run `python -m pytest -q tests/` and check GitHub Actions before treating the build as tested.
