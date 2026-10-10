@@ -1,5 +1,6 @@
 """Transparent normalized response model. NOT physically calibrated."""
 from dataclasses import dataclass, replace
+import math
 WEATHER={"Clear":(1.,1.,1.),"Cloud (aircraft inside)":(.95,.96,.95),
 "Light rain":(.82,.95,.86),"Heavy rain":(.60,.86,.70),"Snow":(.75,.89,.79),"High wind":(.55,.94,.75)}
 SIZE={"Small":.55,"Medium":.75,"Large":.95}
@@ -8,6 +9,8 @@ def clip(x): return max(0.,min(1.,float(x)))
 class Scenario:
     weather:str="Clear"
     rcs:str="Medium"
+    rcs_m2:float|None=None
+    clutter_cnr_db:float=0.
     emits:bool=True
     audio:int=60
     range_m:int=500
@@ -37,7 +40,10 @@ class Scenario:
 def evaluate(s:Scenario):
     wa,wr,wd=WEATHER[s.weather]
     distance=1/(1+(s.range_m/650)**1.35)
-    radar=clip(SIZE[s.rcs]*distance*wd*s.illumination*s.reference*(1-.55*s.sync_error)*(1-.45*s.clutter)*(1-.35*s.radar_noise)*(.7+.3*s.bandwidth)) if s.radar_on else 0.
+    # Engineering units are captured explicitly; mapping to score remains an UNCALIBRATED heuristic.
+    size=SIZE[s.rcs] if s.rcs_m2 is None else clip(.75 + .20*math.log10(max(s.rcs_m2,1e-9)/.01))
+    clutter_penalty=1/(1+10**(s.clutter_cnr_db/10)/10)
+    radar=clip(size*distance*wd*s.illumination*s.reference*(1-.55*s.sync_error)*(1-.45*s.clutter)*(1-.35*s.radar_noise)*(.7+.3*s.bandwidth)*clutter_penalty) if s.radar_on else 0.
     rf=clip(distance*wr*s.rf_sensitivity*s.rf_coverage*(1-.55*s.rf_interference)*(1-.3*s.rf_noise)) if s.rf_on and s.emits else 0.
     # Spacing contributes to directional evidence quality, not independent acoustic range.
     directional=.8+.2*clip(s.mic_spacing/1.5)
