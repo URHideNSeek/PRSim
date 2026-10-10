@@ -17,7 +17,7 @@ WEATHER = {
 with st.sidebar:
     st.header("Scenario")
     weather = st.selectbox("Weather", list(WEATHER), help="Choose conditions around the aircraft. These are simplified synthetic weather assumptions, not measured attenuation.")
-    rcs_m2 = st.select_slider("Aircraft radar cross section (m²)", options=[round(10**(i/10), 6) for i in range(-40, 1, 5)], value=0.01, help="Effective reflecting area in square meters (m²), using reference steps from 0.0001 to 1 m². Values are illustrative, not measurements of a particular aircraft. RCS depends on frequency, polarization and aspect angle.")
+    rcs_m2 = st.select_slider("Aircraft radar cross section (m²)", options=[round(i * 0.05, 2) for i in range(1, 21)], value=0.1, help="Effective radar-reflecting area in square meters, adjustable from 0.05 to 1.00 m² in steps of 0.05 m². Values are illustrative rather than measurements of a specific aircraft. RCS depends on frequency, polarization, and viewing angle.")
     st.caption(f"Equivalent: {10 * __import__('math').log10(rcs_m2):.0f} dBsm")
     emits = st.checkbox("Aircraft emits RF", value=True, help="Whether the aircraft transmits radio signals that passive RF listening could observe. Off means no target RF evidence in this model.")
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", list(range(0, 76, 5)), index=12, help="Aircraft sound level in decibels sound pressure level (dB SPL), from 0 to 75 in 5 dB steps. 0 dB SPL means the standard reference sound pressure, not complete silence; 75 dB is much louder. A reference measurement distance is not specified, so these are illustrative inputs rather than calibrated aircraft sound levels.")
