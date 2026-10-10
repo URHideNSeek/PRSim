@@ -17,8 +17,7 @@ WEATHER = {
 with st.sidebar:
     st.header("Scenario")
     weather = st.selectbox("Weather", list(WEATHER), help="Choose conditions around the aircraft. These are simplified synthetic weather assumptions, not measured attenuation.")
-    rcs = st.selectbox("Aircraft radar cross-section class", ["Small", "Medium", "Large"], index=1, help="How strongly the aircraft reflects radar energy, expressed as Small, Medium, or Large. These are relative classes, not measured square meters.",
-                       help="Relative synthetic classes; no calibrated m² or aircraft dimensions.")
+    rcs = st.selectbox("Aircraft radar cross-section class", ["Small", "Medium", "Large"], index=1, help="How strongly the aircraft reflects radar energy. Small, Medium, and Large are relative synthetic classes, not measured square meters.")
     emits = st.checkbox("Aircraft emits RF", value=True, help="Whether the aircraft transmits radio signals that passive RF listening could observe. Off means no target RF evidence in this model.")
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", [45, 60, 75], index=1, help="How loud the aircraft is at an unspecified reference location. 45 dB is quieter than 75 dB; these values are not calibrated to range.")
     range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="Separation between aircraft and sensor, from 0 to 500 m in 25 m steps. Greater distance reduces synthetic evidence; 0 m is a mathematical endpoint.")
@@ -72,8 +71,8 @@ c2.metric("RF evidence", f"{rf:.2f}", help="Normalized synthetic evidence from a
 c3.metric("Acoustic evidence", f"{acoustic:.2f}", help="Normalized synthetic evidence from microphone measurements. Not a measured sound-detection range.")
 st.subheader("Five comparative outputs", help="Radar-only versus fused results. These are simplified indicators, not field measurements.")
 st.dataframe(results, use_container_width=True)
-with st.expander("What do the five outputs mean?"):
-    st.markdown("""**Detection evidence:** A 0–1 synthetic signal score, not a probability.\n\n**Latency proxy:** An illustrative time indicator; lower is better, but it is not measured detection time.\n\n**Tracking uncertainty:** A simplified uncertainty index; lower means greater modeled confidence, not actual position error.\n\n**Environmental retention:** How well the model retains evidence under selected weather assumptions; higher is better.\n\n**Availability:** Estimated fraction of time the sensor setup is usable under the model assumptions; higher is better.""")
+st.caption("Output guide: Detection evidence = normalized synthetic score; latency = illustrative time proxy; tracking uncertainty = confidence proxy; environmental retention = assumed weather resilience; availability = modeled uptime. These are not measured sensor performance.")
+st.caption("Hover over the ⓘ icons next to the selectors and results for plain-language explanations.")
 st.subheader("Evidence comparison", help="Visual comparison of radar-only and fused synthetic evidence scores.")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 
