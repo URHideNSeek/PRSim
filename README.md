@@ -32,3 +32,11 @@ The main Streamlit page includes a target-distance selector from 0 to 500 m in 2
 
 ## Published evidence and calibration
 The **Evidence Calibration** Streamlit page records physically dimensioned environmental inputs (GHz, mm/h, km, °C, hPa, g/m³, m/s) and the primary ITU-R P.838-3 / P.676-13 standards, and exports source-traceable JSON. It explicitly distinguishes published propagation *methods* from unvalidated radar-detection *performance*. The existing synthetic detection scores are intentionally unchanged; no standards-based attenuation calculation is claimed until validated implementation and correct path geometry are available.
+
+## Motion and probability controls
+
+The main Streamlit page and Research Validation page now include target speed (0–50 m/s, 1 m/s steps) and heading (0–360°, 15° steps). These are stored in the scenario and export, but **do not affect detection evidence or the Monte Carlo distributions** until a validated bistatic geometry and motion-response model is developed. A heading reference frame must be specified for physical Doppler calculations.
+
+The Research Validation page prominently reports **synthetic detection probability** and **synthetic false-alarm probability** from repeated target-present and target-absent trials. These values are not validated for the selected aircraft, weather, distance, speed, or heading. The main dashboard continues to show a synthetic threshold decision rather than a physical detection claim.
+
+Motion regression tests cover all allowed boundary values and representative headings, and assert that unsupported motion effects are not silently invented.
