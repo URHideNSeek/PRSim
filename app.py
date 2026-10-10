@@ -60,13 +60,13 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
-st.subheader("Detection finding", help="Simple YES/NO comparison between the synthetic fused evidence score and your selected threshold. Not a verified real-world detection.")
+st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
 finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
 if finding:
-    st.success(f"**AIRCRAFT DETECTED — YES (SIMULATED)** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
+    st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
-    st.error(f"**AIRCRAFT DETECTED — NO (SIMULATED)** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
+    st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
 c1, c2, c3 = st.columns(3)
 c1.metric("Radar evidence", f"{radar:.2f}", help="Normalized synthetic radar signal score, from zero to one. Not a measured detection probability.")
 c2.metric("RF evidence", f"{rf:.2f}", help="Normalized synthetic evidence from aircraft radio emissions. It is zero if the aircraft emits no RF.")
@@ -78,6 +78,6 @@ st.caption("Hover over the ⓘ icons next to the selectors and results for plain
 st.subheader("Evidence comparison", help="Visual comparison of radar-only and fused synthetic evidence scores.")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 
-st.info("This is NOT a measured probability of detection, calibrated range prediction, or assurance that the FTA would detect an aircraft.")
-st.caption("No RF-emission credit is assigned when RF is disabled. Stereo audio does not establish absolute range. Radar SAR and GMTI remain independent, unimplemented verification workstreams.")
+st.info("Actual aircraft detection: NOT DETERMINED. This uncalibrated model cannot establish whether the FTA would detect an aircraft.")
+st.caption("No target-emission RF credit when RF is disabled. Stereo audio does not independently establish range. RCS in m² and clutter CNR in dB are converted to scores using heuristic equations, not validated physics. SAR and GMTI remain unimplemented.")
 st.download_button("Export scenario results CSV", results.to_csv().encode(), file_name="prsim_results.csv", mime="text/csv", help="Download the displayed synthetic result table as a CSV file.")
