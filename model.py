@@ -14,6 +14,8 @@ class Scenario:
     emits:bool=True
     audio:int=60
     range_m:int=500
+    speed_mps:int=0
+    heading_deg:int=0
     observation:int=10
     update:float=1.
     fusion_weight:float=.45
@@ -61,7 +63,11 @@ def evaluate(s:Scenario):
           "Tracking uncertainty index (lower better)":round(1-.8*score,3),
           "Environmental retention index":round(robustness,3),
           "Availability index (0–1)":round(availability,3)}
+    # Heading is referenced to an arbitrary coordinate frame; no illuminator bearing is known.
+    # The speed/heading fields are intentionally not mapped to detection evidence until
+    # bistatic geometry and motion-response data are available.
     return {"radar":radar,"rf":rf,"acoustic":audio,"fused":fused,
+            "motion":{"speed_mps":s.speed_mps,"heading_deg":s.heading_deg,"model_status":"not calibrated"},
             "radar_metrics":measures(radar,radar_avail),
             "fused_metrics":measures(fused,fused_avail),
             "detected":fused>=s.threshold}
