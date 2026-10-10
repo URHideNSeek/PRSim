@@ -23,7 +23,7 @@ def test_motion_state_is_recorded_and_not_falsely_calibrated():
             assert out["detected"]==reference["detected"]
 
 def test_ui_motion_and_probability_present():
-    for path in ["app.py","pages/01_Research_Validation.py"]:
+    for path in ["PRSim.py","pages/01_Research_Validation.py"]:
         src=Path(path).read_text(encoding="utf-8")
         ast.parse(src)
         assert "speed_mps" in src and "heading_deg" in src
@@ -32,7 +32,7 @@ def test_ui_motion_and_probability_present():
     assert "Synthetic false-alarm probability" in research
 
 def test_motion_ui_labels():
-    for path in ["app.py","pages/01_Research_Validation.py"]:
+    for path in ["PRSim.py","pages/01_Research_Validation.py"]:
         text=Path(path).read_text(encoding="utf-8")
         assert "Target ground speed (m/s)" in text
         assert "Target heading relative to sensor (degrees)" in text
