@@ -26,3 +26,6 @@ The `tests/test_model.py` suite varies every one of the 28 fields in the scenari
 **Scope limitation:** The Research Validation page's weather, RCS and acoustic dB controls currently record metadata only and do not affect the Monte Carlo output. The scenario page has a separate normalized heuristic model. The Design Space page's controls change the synthetic sampling experiment, not calibrated physical hardware. Therefore a complete end-to-end, physics-valid input/output acceptance test is not yet possible; calibration and UI interaction testing are still required.
 
 Run locally: `python -m pip install -r requirements.txt pytest && python -m pytest -q tests/`.
+
+## Distance control and detection finding
+The main Streamlit page includes a target-distance selector from 50 to 3,000 m in 50 m increments (60 choices) and a prominent **AIRCRAFT DETECTED — YES/NO (SIMULATED)** verdict. This is a synthetic threshold decision, **not** a verified real-world detection prediction. `tests/test_distance.py` checks all 60 distances across six weather and three aircraft-size classes, as well as RF-off and sensor-off invariants. Run `python -m pytest -q tests/` to execute the full suite.
