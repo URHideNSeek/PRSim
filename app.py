@@ -17,7 +17,8 @@ WEATHER = {
 with st.sidebar:
     st.header("Scenario")
     weather = st.selectbox("Weather", list(WEATHER), help="Choose conditions around the aircraft. These are simplified synthetic weather assumptions, not measured attenuation.")
-    rcs = st.selectbox("Aircraft radar cross-section class", ["Small", "Medium", "Large"], index=1, help="How strongly the aircraft reflects radar energy. Small, Medium, and Large are relative synthetic classes, not measured square meters.")
+    rcs_m2 = st.select_slider("Aircraft radar cross section (m²)", options=[round(10**(i/10), 6) for i in range(-40, 1, 5)], value=0.01, help="Effective reflecting area in square meters (m²), using reference steps from 0.0001 to 1 m². Values are illustrative, not measurements of a particular aircraft. RCS depends on frequency, polarization and aspect angle.")
+    st.caption(f"Equivalent: {10 * __import__('math').log10(rcs_m2):.0f} dBsm")
     emits = st.checkbox("Aircraft emits RF", value=True, help="Whether the aircraft transmits radio signals that passive RF listening could observe. Off means no target RF evidence in this model.")
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", list(range(0, 76, 5)), index=12, help="Aircraft sound level in decibels sound pressure level (dB SPL), from 0 to 75 in 5 dB steps. 0 dB SPL means the standard reference sound pressure, not complete silence; 75 dB is much louder. A reference measurement distance is not specified, so these are illustrative inputs rather than calibrated aircraft sound levels.")
     range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="Separation between aircraft and sensor, from 0 to 500 m in 25 m steps. Greater distance reduces synthetic evidence; 0 m is a mathematical endpoint.")
@@ -31,7 +32,8 @@ with st.sidebar:
     illumination = st.slider("Illuminator availability", 0., 1., .85, .05, help="Assumed fraction of time an external X-band signal is usable for passive radar. Zero means no radar evidence.")
     reference = st.slider("Reference-channel quality", 0., 1., .8, .05, help="How cleanly the receiver observes the external reference signal. Higher values improve synthetic radar evidence.")
     sync_error = st.slider("Synchronization error index", 0., 1., .15, .05, help="How poorly receiver timing and frequency align. Larger error reduces synthetic radar evidence.")
-    clutter = st.slider("Clutter/interference index", 0., 1., .3, .05, help="How much unrelated reflection or interference complicates radar observations. Higher means worse synthetic evidence.")
+    clutter = st.slider("Clutter/interference index", 0., 1., .3, .05, help="Legacy normalized radar interference input. This is separate from background reflected clutter.")
+    clutter_cnr_db = st.slider("Background reflected clutter CNR (dB)", -20, 40, 0, 5, help="Clutter-to-noise ratio in decibels: strength of reflections from terrain, buildings and vegetation relative to receiver noise. Larger values mean stronger unwanted reflections. Detection impact is still an uncalibrated heuristic.")
     radar_noise = st.slider("Receiver noise index", 0., 1., .2, .05, help="Extra noise from radar receiver electronics. Higher means worse synthetic radar evidence.")
     bandwidth = st.slider("Normalized processed bandwidth", 0.1, 1., .6, .1, help="Relative width of the radar signal being processed, not a frequency in hertz. Higher slightly increases the synthetic score.")
     st.header("Passive RF listening")
@@ -48,7 +50,7 @@ with st.sidebar:
     wind_noise = st.slider("Microphone wind-noise index", 0., 1., .2, .05, help="Noise caused by wind around the microphones. Higher wind noise reduces synthetic acoustic evidence.")
     channel_sync = st.slider("Channel synchronization quality", 0., 1., .9, .05, help="How closely the two microphone channels agree in timing. Higher improves synthetic acoustic evidence.")
 
-scenario = Scenario(weather=weather,rcs=rcs,emits=emits,audio=audio,range_m=range_m,
+scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,emits=emits,audio=audio,range_m=range_m,
     observation=observation,update=update,fusion_weight=fusion_weight,fail=fail,
     radar_on=radar_on,illumination=illumination,reference=reference,sync_error=sync_error,
     clutter=clutter,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
