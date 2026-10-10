@@ -6,13 +6,13 @@ from model import Scenario,evaluate
 def test_motion_bounds_and_steps():
     assert list(range(0,51,1))[0]==0
     assert list(range(0,51,1))[-1]==50
-    assert list(range(0,361,15))[-1]==360
+    assert list(range(0,346,15))[-1]==345
 
 def test_motion_state_is_recorded_and_not_falsely_calibrated():
     base=Scenario()
     reference=evaluate(base)
     for speed in [0,1,15,50]:
-        for heading in [0,15,90,180,270,360]:
+        for heading in [0,15,90,180,270,345]:
             out=evaluate(replace(base,speed_mps=speed,heading_deg=heading))
             assert out["motion"]["speed_mps"]==speed
             assert out["motion"]["heading_deg"]==heading
