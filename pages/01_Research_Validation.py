@@ -13,6 +13,8 @@ with st.sidebar:
     rf_emits=st.checkbox("Aircraft emits RF",False)
     acoustic_dbspl=st.selectbox("Acoustic signature (dB SPL)",list(range(0,76,5)),index=12,help="Sound pressure level at an unspecified reference location, in 5 dB increments from 0 to 75 dB SPL. 0 dB SPL is a reference sound pressure, not zero sound. This input is currently recorded as scenario metadata only and does not change this page’s Monte Carlo results.")
     distance_m=st.select_slider("Target distance (m)",options=list(range(0,501,25)),value=250,help="Distance in 25 m steps; applies to the separate scenario preview.")
+    speed_mps=st.slider("Target speed (m/s)",0,50,0,1,help="Aircraft speed in m/s. Recorded as metadata; not yet connected to radar Doppler or detection statistics.")
+    heading_deg=st.slider("Target heading (degrees)",0,360,0,15,help="Direction relative to an arbitrary 0° reference. Requires known transmitter/receiver geometry to model bistatic Doppler.")
     st.header("Experiment")
     seed=st.number_input("Reproducible random seed",0,999999,42)
     n=st.select_slider("Trials per class",[100,500,1000,3000,5000],value=1000)
@@ -72,12 +74,17 @@ for name,weights in configs.items():
         curves.append({"Configuration":name,"False alarm":float(np.mean((noise>=t)&nmask)),
                        "Detection":float(np.mean((signal>=t)&smask))})
 results=pd.DataFrame(rows)
-preview=evaluate_scenario(Scenario(weather=weather,rcs_m2=rcs_m2,emits=rf_emits,audio=acoustic_dbspl,range_m=distance_m))
+preview=evaluate_scenario(Scenario(weather=weather,rcs_m2=rcs_m2,emits=rf_emits,audio=acoustic_dbspl,range_m=distance_m,speed_mps=speed_mps,heading_deg=heading_deg))
 st.subheader("Scenario preview — separate heuristic model")
 st.metric("Synthetic fused evidence index",format(preview["fused"],".3f"),help="Illustrative score computed using weather, RCS, RF emissions, acoustic dB and distance; not a measured detection probability.")
 st.caption("The scenario preview responds to the selected target inputs. Monte Carlo results below remain an independent synthetic statistical demonstration and DO NOT incorporate these target inputs into the random distributions.")
 st.subheader("1. Detection probability at a controlled false-alarm threshold")
 st.dataframe(results,use_container_width=True,hide_index=True)
+pdet=results.iloc[-1]["Synthetic Pd"]
+pfa=results.iloc[-1]["Empirical Pfa"]
+cprob1,cprob2=st.columns(2)
+cprob1.metric("Synthetic detection probability (fusion)",f"{pdet:.1%}",help="Fraction of target-present synthetic trials above the decision threshold. Not validated for this aircraft or motion.")
+cprob2.metric("Synthetic false-alarm probability (fusion)",f"{pfa:.1%}",help="Fraction of target-absent synthetic trials above the decision threshold. Not a field-measured false-alarm rate.")
 st.caption("95% Wilson intervals represent Monte Carlo sampling uncertainty only. Pfa may differ from the requested value when sensors are unavailable.")
 st.subheader("2. Receiver operating characteristic")
 st.line_chart(pd.DataFrame(curves).pivot_table(index="False alarm",columns="Configuration",values="Detection"))
@@ -99,4 +106,4 @@ with c2:
 st.caption("Checklists do not assert SAR or GMTI compliance. Weather, RCS and acoustic dB selections are metadata only until empirically calibrated models are added.")
 st.download_button("Download experiment CSV",results.to_csv(index=False),file_name="prsim_monte_carlo.csv")
 import json
-st.download_button("Download scenario JSON",json.dumps({"weather":weather,"rcs_m2":rcs_m2,"distance_m":distance_m,"rf_emits":rf_emits,"acoustic_dbspl":acoustic_dbspl,"seed":int(seed),"trials":n,"target_pfa":target_pfa},indent=2),file_name="prsim_scenario.json")
+st.download_button("Download scenario JSON",json.dumps({"weather":weather,"rcs_m2":rcs_m2,"distance_m":distance_m,"speed_mps":speed_mps,"heading_deg":heading_deg,"rf_emits":rf_emits,"acoustic_dbspl":acoustic_dbspl,"seed":int(seed),"trials":n,"target_pfa":target_pfa},indent=2),file_name="prsim_scenario.json")
