@@ -1,4 +1,4 @@
-import math
+from model import Scenario, evaluate
 import pandas as pd
 import streamlit as st
 
@@ -49,38 +49,16 @@ with st.sidebar:
     wind_noise = st.slider("Microphone wind-noise index", 0., 1., .2, .05)
     channel_sync = st.slider("Channel synchronization quality", 0., 1., .9, .05)
 
-def clamp(x):
-    return max(0., min(1., float(x)))
-
-w_a, w_rf, w_r = WEATHER[weather]
-size = {"Small": .55, "Medium": .75, "Large": .95}[rcs]
-# Heuristic scores only. These are NOT detection physics, measured Pd, or operational ranges.
-distance_factor = 1 / (1 + (range_m / 650) ** 1.35)
-radar = clamp(size * distance_factor * w_r * illumination * reference *
-              (1 - .55 * sync_error) * (1 - .45 * clutter) *
-              (1 - .35 * radar_noise) * (.7 + .3 * bandwidth)) if radar_on else 0.
-rf = clamp(distance_factor * w_rf * rf_sensitivity * rf_coverage *
-           (1 - .55 * rf_interference) * (1 - .3 * rf_noise)) if rf_on and emits else 0.
-acoustic = clamp((audio / 75) * (1 / (1 + (range_m / 280) ** 1.4)) *
-                 w_a * microphone_quality * channel_sync *
-                 (1 - .55 * audio_noise) * (1 - .5 * wind_noise)) if acoustic_on else 0.
-# Fusion demonstration: conservative weighted evidence, without assuming independence.
-fused = clamp(radar + fusion_weight * (max(rf, acoustic) * (1 - radar)))
-radar_availability = illumination * (1 - fail) if radar_on else 0
-fused_availability = clamp((radar_availability + .35 * max(rf, acoustic)) * (1 - fail))
-robustness = clamp((w_r * (radar > 0) + w_rf * (rf > 0) + w_a * (acoustic > 0)) /
-                   max(1, int(radar > 0) + int(rf > 0) + int(acoustic > 0)))
-# Proxy indicators, not physical latency or position covariance.
-def metrics(score, avail):
-    return {
-        "Detection evidence index (0–1)": round(score, 3),
-        "Latency proxy (s)": round(update + observation * (1 - score), 2),
-        "Tracking uncertainty index (lower better)": round(1 - score * .8, 3),
-        "Environmental retention index": round(robustness, 3),
-        "Availability index (0–1)": round(avail, 3),
-    }
-results = pd.DataFrame({"Radar only": metrics(radar, radar_availability),
-                        "Fused": metrics(fused, fused_availability)})
+scenario = Scenario(weather=weather,rcs=rcs,emits=emits,audio=audio,range_m=range_m,
+    observation=observation,update=update,fusion_weight=fusion_weight,fail=fail,
+    radar_on=radar_on,illumination=illumination,reference=reference,sync_error=sync_error,
+    clutter=clutter,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
+    rf_sensitivity=rf_sensitivity,rf_interference=rf_interference,rf_coverage=rf_coverage,
+    rf_noise=rf_noise,acoustic_on=acoustic_on,microphone_quality=microphone_quality,
+    mic_spacing=mic_spacing,audio_noise=audio_noise,wind_noise=wind_noise,channel_sync=channel_sync)
+out=evaluate(scenario)
+radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
+results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
 c1, c2, c3 = st.columns(3)
 c1.metric("Radar evidence", f"{radar:.2f}")
 c2.metric("RF evidence", f"{rf:.2f}")
@@ -91,7 +69,7 @@ st.subheader("Evidence comparison")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 st.subheader("Simple finding")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05)
-if fused >= threshold:
+if evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]:
     st.success("SIMULATED: Evidence exceeds the selected threshold. Candidate detection in this synthetic scenario.")
 else:
     st.warning("SIMULATED: Evidence does not exceed the selected threshold. No detection indicated by this synthetic model.")
