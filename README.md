@@ -29,3 +29,6 @@ Run locally: `python -m pip install -r requirements.txt pytest && python -m pyte
 
 ## Distance control and detection finding
 The main Streamlit page includes a target-distance selector from 0 to 500 m in 25 m increments (21 choices) and a prominent **AIRCRAFT DETECTED — YES/NO (SIMULATED)** verdict. This is a synthetic threshold decision, **not** a verified real-world detection prediction. `tests/test_distance.py` checks all 21 distances across six weather and three aircraft-size classes, as well as RF-off and sensor-off invariants. Run `python -m pytest -q tests/` to execute the full suite.
+
+## Published evidence and calibration
+The **Evidence Calibration** Streamlit page records physically dimensioned environmental inputs (GHz, mm/h, km, °C, hPa, g/m³, m/s) and the primary ITU-R P.838-3 / P.676-13 standards, and exports source-traceable JSON. It explicitly distinguishes published propagation *methods* from unvalidated radar-detection *performance*. The existing synthetic detection scores are intentionally unchanged; no standards-based attenuation calculation is claimed until validated implementation and correct path geometry are available.
