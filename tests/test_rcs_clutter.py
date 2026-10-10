@@ -3,8 +3,9 @@ import math
 from model import Scenario,evaluate
 
 def test_rcs_standard_reference_values_and_conversion():
-    values=[round(10**(i/10),6) for i in range(-40,1,5)]
-    assert values[0]==.0001 and values[-1]==1 and .01 in values
+    values=[round(i*0.05,2) for i in range(1,21)]
+    assert len(values)==20 and values[0]==.05 and values[-1]==1.0
+    assert all(round(b-a,2)==.05 for a,b in zip(values,values[1:]))
     assert abs(10*math.log10(.01)+20)<1e-9
 
 def test_rcs_increases_radar_evidence():
