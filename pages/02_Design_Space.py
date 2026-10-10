@@ -6,7 +6,7 @@ st.title("Monte Carlo Design-Space Study")
 st.warning("Synthetic sensitivity study only. These settings are NOT field-optimized hardware defaults.")
 st.markdown("Compare 108 synthetic candidates across six environmental scenarios and RF-emitting / RF-silent targets. Fixed illustrative false-alarm threshold: 5%.")
 seed=st.number_input("Random seed",0,999999,42)
-trials=st.select_slider("Trials per class and scenario",[300,600,1500,3000],value=1500)
+trials=st.select_slider("Trials per class and scenario",[100,500,1000,1500,3000,5000],value=1500,help="Number of Monte Carlo trials per target-present and target-absent condition, matching Research Validation presets.")
 @st.cache_data(show_spinner=False)
 def compute(seed,trials):
     return evaluate(seed=int(seed),trials=int(trials))
