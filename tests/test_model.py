@@ -8,6 +8,8 @@ BASE=Scenario(weather="Clear",emits=True,radar_on=True,rf_on=True,acoustic_on=Tr
 CASES=[
  ("weather","Clear","Heavy rain","fused","down"),
  ("rcs","Small","Large","radar","up"),
+ ("rcs_m2",0.05,1.0,"radar","up"),
+ ("clutter_cnr_db",-20,40,"radar","down"),
  ("emits",False,True,"rf","up"),
  ("audio",45,75,"acoustic","up"),
  ("range_m",100,1500,"fused","down"),
