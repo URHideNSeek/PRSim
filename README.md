@@ -13,7 +13,7 @@ Choose weather (clear, aircraft inside cloud, light/heavy rain, snow, high wind)
 **Scientific limitations:** Scores are illustrative normalized indices, not physically calibrated detection probabilities. RF-off sources cannot be credited with RF detection. Stereo acoustic measurements do not independently supply range. The app is a scenario/design review tool and must not be used to claim field performance. Future versions need literature-calibrated propagation, measured sensor responses, empirical covariance, ROC curves, confidence intervals, independent SAR/GMTI evaluation, and field validation.
 
 ## Files
-- `app.py` — Streamlit UI and synthetic assessment engine
+- `app.py` — Streamlit Cloud entrypoint and navigation; `PRSim.py` — main simulator UI
 - `requirements.txt` — runtime dependencies
 
 ## Research validation page
@@ -51,3 +51,5 @@ Motion regression tests cover all allowed boundary values and representative hea
 - At low Monte Carlo sample counts, small target false-alarm probabilities have high uncertainty. No numeric output is evidence of field detection until independently validated.
 
 Run `python -m pytest -q tests/` and check GitHub Actions before treating the build as tested.
+
+The navigation now labels the main page **PRSim** while keeping `app.py` as the deployment entrypoint. No Streamlit Cloud configuration change is required.
