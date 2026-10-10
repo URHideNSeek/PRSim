@@ -22,8 +22,8 @@ with st.sidebar:
     emits = st.checkbox("Aircraft emits RF", value=True, help="Whether the aircraft transmits radio signals that passive RF listening could observe. Off means no target RF evidence in this model.")
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", list(range(0, 76, 5)), index=12, help="Aircraft sound level in decibels sound pressure level (dB SPL), from 0 to 75 in 5 dB steps. 0 dB SPL means the standard reference sound pressure, not complete silence; 75 dB is much louder. A reference measurement distance is not specified, so these are illustrative inputs rather than calibrated aircraft sound levels.")
     range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="Separation between aircraft and sensor, from 0 to 500 m in 25 m steps. Greater distance reduces synthetic evidence; 0 m is a mathematical endpoint.")
-    speed_mps = st.slider("Target speed (m/s)", 0, 50, 0, 1, help="Aircraft speed from stationary to 50 meters per second. Stored for motion studies; it does not yet alter the uncalibrated detection score.")
-    heading_deg = st.slider("Target heading (degrees)", 0, 360, 0, 15, help="Direction of travel relative to an arbitrary 0° reference. Bistatic radar Doppler requires actual transmitter and receiver geometry, so heading does not yet change detection evidence.")
+    speed_mps = st.slider("Target ground speed (m/s)", 0, 50, 0, 1, help="Horizontal speed over the ground, from 0 to 50 m/s. This excludes vertical climb or descent. Stored for future motion studies; not yet used in detection calculations.")
+    heading_deg = st.slider("Target heading relative to sensor (degrees)", 0, 360, 0, 15, help="Direction of horizontal travel relative to the sensor-to-target line: 0° moves directly away from the sensor, 90° moves across its line of sight, and 180° moves directly toward it. This is not a compass bearing. Passive bistatic radar also requires illuminator geometry.")
     st.header("Field test article")
     observation = st.slider("Observation window (s)", 1, 60, 10, help="How long the simulated system listens during an observation. This affects the latency proxy, not physical detection probability.")
     update = st.slider("Measurement update interval (s)", 0.1, 5.0, 1.0, 0.1, help="Time between simulated sensor updates. A larger interval increases the latency proxy.")
@@ -62,7 +62,7 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
-st.caption(f"Motion scenario: {speed_mps} m/s at heading {heading_deg}°. Motion is recorded but is not yet connected to the detection model.")
+st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor). Motion is recorded but is not yet connected to the detection model.")
 st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
 finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
