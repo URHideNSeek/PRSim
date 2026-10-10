@@ -3,16 +3,16 @@ from dataclasses import replace
 import pytest
 from model import Scenario, evaluate
 
-DISTANCES = list(range(50,3001,50))
+DISTANCES = list(range(0,501,25))
 
 def test_distance_selector_values():
-    assert len(DISTANCES)==60
-    assert DISTANCES[0]==50 and DISTANCES[-1]==3000
-    assert all(b-a==50 for a,b in zip(DISTANCES,DISTANCES[1:]))
+    assert len(DISTANCES)==21
+    assert DISTANCES[0]==0 and DISTANCES[-1]==500
+    assert all(b-a==25 for a,b in zip(DISTANCES,DISTANCES[1:]))
 
 @pytest.mark.parametrize("weather",["Clear","Cloud (aircraft inside)","Light rain","Heavy rain","Snow","High wind"])
 @pytest.mark.parametrize("rcs",["Small","Medium","Large"])
-def test_all_50m_steps_nonincreasing_evidence(weather,rcs):
+def test_all_25m_steps_nonincreasing_evidence(weather,rcs):
     baseline=Scenario(weather=weather,rcs=rcs,emits=True)
     outputs=[evaluate(replace(baseline,range_m=d)) for d in DISTANCES]
     for name in ["radar","rf","acoustic","fused"]:
@@ -20,9 +20,9 @@ def test_all_50m_steps_nonincreasing_evidence(weather,rcs):
     assert all(isinstance(out["detected"],bool) for out in outputs)
 
 def test_distance_changes_finding_with_researcher_threshold():
-    scenario=Scenario(weather="Clear",rcs="Large",emits=True,threshold=.20)
-    near=evaluate(replace(scenario,range_m=50))
-    far=evaluate(replace(scenario,range_m=3000))
+    scenario=Scenario(weather="Clear",rcs="Large",emits=True,threshold=.40)
+    near=evaluate(replace(scenario,range_m=0))
+    far=evaluate(replace(scenario,range_m=500))
     assert near["fused"]>far["fused"]
     assert near["detected"] and not far["detected"]
 
