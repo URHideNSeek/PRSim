@@ -22,6 +22,8 @@ with st.sidebar:
     emits = st.checkbox("Aircraft emits RF", value=True, help="Whether the aircraft transmits radio signals that passive RF listening could observe. Off means no target RF evidence in this model.")
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", list(range(0, 76, 5)), index=12, help="Aircraft sound level in decibels sound pressure level (dB SPL), from 0 to 75 in 5 dB steps. 0 dB SPL means the standard reference sound pressure, not complete silence; 75 dB is much louder. A reference measurement distance is not specified, so these are illustrative inputs rather than calibrated aircraft sound levels.")
     range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="Separation between aircraft and sensor, from 0 to 500 m in 25 m steps. Greater distance reduces synthetic evidence; 0 m is a mathematical endpoint.")
+    speed_mps = st.slider("Target speed (m/s)", 0, 50, 0, 1, help="Aircraft speed from stationary to 50 meters per second. Stored for motion studies; it does not yet alter the uncalibrated detection score.")
+    heading_deg = st.slider("Target heading (degrees)", 0, 360, 0, 15, help="Direction of travel relative to an arbitrary 0° reference. Bistatic radar Doppler requires actual transmitter and receiver geometry, so heading does not yet change detection evidence.")
     st.header("Field test article")
     observation = st.slider("Observation window (s)", 1, 60, 10, help="How long the simulated system listens during an observation. This affects the latency proxy, not physical detection probability.")
     update = st.slider("Measurement update interval (s)", 0.1, 5.0, 1.0, 0.1, help="Time between simulated sensor updates. A larger interval increases the latency proxy.")
@@ -50,7 +52,7 @@ with st.sidebar:
     wind_noise = st.slider("Microphone wind-noise index", 0., 1., .2, .05, help="Noise caused by wind around the microphones. Higher wind noise reduces synthetic acoustic evidence.")
     channel_sync = st.slider("Channel synchronization quality", 0., 1., .9, .05, help="How closely the two microphone channels agree in timing. Higher improves synthetic acoustic evidence.")
 
-scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,emits=emits,audio=audio,range_m=range_m,
+scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,emits=emits,audio=audio,range_m=range_m,speed_mps=speed_mps,heading_deg=heading_deg,
     observation=observation,update=update,fusion_weight=fusion_weight,fail=fail,
     radar_on=radar_on,illumination=illumination,reference=reference,sync_error=sync_error,
     clutter=clutter,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
@@ -60,6 +62,7 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
+st.caption(f"Motion scenario: {speed_mps} m/s at heading {heading_deg}°. Motion is recorded but is not yet connected to the detection model.")
 st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
 finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
@@ -78,6 +81,6 @@ st.caption("Hover over the ⓘ icons next to the selectors and results for plain
 st.subheader("Evidence comparison", help="Visual comparison of radar-only and fused synthetic evidence scores.")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 
-st.info("Actual aircraft detection: NOT DETERMINED. This uncalibrated model cannot establish whether the FTA would detect an aircraft.")
+st.info("Actual aircraft detection: NOT DETERMINED. Calibrated probability of detection and false-alarm probability: NOT AVAILABLE on this page. Use Research Validation for separately simulated Monte Carlo estimates.")
 st.caption("No target-emission RF credit when RF is disabled. Stereo audio does not independently establish range. RCS in m² and clutter CNR in dB are converted to scores using heuristic equations, not validated physics. SAR and GMTI remain unimplemented.")
 st.download_button("Export scenario results CSV", results.to_csv().encode(), file_name="prsim_results.csv", mime="text/csv", help="Download the displayed synthetic result table as a CSV file.")
