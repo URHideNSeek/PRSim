@@ -5,6 +5,7 @@ import streamlit as st
 st.set_page_config(page_title="PRSim | Research Lab", layout="wide")
 st.title("PRSim — Multisensor Research Lab")
 st.caption("Synthetic design-space demonstrator · NOT a validated detection model, radar processor, or SAR/GMTI verification")
+range_m = st.select_slider("Target distance from sensor (m)", options=list(range(50, 3001, 50)), value=500, help="50–3,000 meters in exactly 50 m increments. This controls the synthetic range-response model.")
 
 WEATHER = {
     "Clear": (1.00, 1.00, 1.00),
@@ -22,7 +23,6 @@ with st.sidebar:
     emits = st.checkbox("Aircraft emits RF", value=True)
     audio = st.selectbox("Acoustic signature at reference point (dB SPL)", [45, 60, 75], index=1)
     st.header("Field test article")
-    range_m = st.slider("Illustrative separation (m)", 50, 3000, 500, 50)
     observation = st.slider("Observation window (s)", 1, 60, 10)
     update = st.slider("Measurement update interval (s)", 0.1, 5.0, 1.0, 0.1)
     fusion_weight = st.slider("Auxiliary fusion contribution (synthetic)", 0.0, 1.0, .45, .05)
@@ -67,12 +67,13 @@ st.subheader("Five comparative outputs")
 st.dataframe(results, use_container_width=True)
 st.subheader("Evidence comparison")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
-st.subheader("Simple finding")
+st.subheader("Detection finding")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05)
-if evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]:
-    st.success("SIMULATED: Evidence exceeds the selected threshold. Candidate detection in this synthetic scenario.")
+finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
+if finding:
+    st.success(f"**AIRCRAFT DETECTED — YES (SIMULATED)** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
-    st.warning("SIMULATED: Evidence does not exceed the selected threshold. No detection indicated by this synthetic model.")
+    st.error(f"**AIRCRAFT DETECTED — NO (SIMULATED)** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
 st.info("This is NOT a measured probability of detection, calibrated range prediction, or assurance that the FTA would detect an aircraft.")
 st.caption("No RF-emission credit is assigned when RF is disabled. Stereo audio does not establish absolute range. Radar SAR and GMTI remain independent, unimplemented verification workstreams.")
 st.download_button("Export scenario results CSV", results.to_csv().encode(), file_name="prsim_results.csv", mime="text/csv")
