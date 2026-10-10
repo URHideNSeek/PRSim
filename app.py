@@ -5,7 +5,7 @@ import streamlit as st
 st.set_page_config(page_title="PRSim | Research Lab", layout="wide")
 st.title("PRSim — Multisensor Research Lab")
 st.caption("Synthetic design-space demonstrator · NOT a validated detection model, radar processor, or SAR/GMTI verification")
-range_m = st.select_slider("Target distance from sensor (m)", options=list(range(50, 3001, 50)), value=500, help="50–3,000 meters in exactly 50 m increments. This controls the synthetic range-response model.")
+range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="0–500 meters in exactly 25 m increments. This controls the synthetic range-response model.")
 
 WEATHER = {
     "Clear": (1.00, 1.00, 1.00),
