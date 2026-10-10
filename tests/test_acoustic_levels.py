@@ -7,7 +7,7 @@ from model import Scenario,evaluate
 def test_acoustic_levels_exactly_0_to_75_in_fives():
     expected=list(range(0,76,5))
     assert len(expected)==16 and expected[0]==0 and expected[-1]==75
-    for file in ["app.py","pages/01_Research_Validation.py"]:
+    for file in ["PRSim.py","pages/01_Research_Validation.py"]:
         text=Path(file).read_text(encoding="utf-8")
         assert "list(range(0, 76, 5))" in text or "list(range(0,76,5))" in text
         assert "help=" in text
