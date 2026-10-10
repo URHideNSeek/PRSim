@@ -18,3 +18,11 @@ Choose weather (clear, aircraft inside cloud, light/heavy rain, snow, high wind)
 
 ## Research validation page
 Run the app and select **Research Validation** from the Streamlit page navigation. It provides reproducible synthetic Monte Carlo comparisons, ROC curves, 95% Wilson sampling intervals, and separate SAR/GMTI evidence checklists. Weather, RCS and dB choices on this page are metadata only; they are not mapped to calibrated propagation. Do not interpret synthetic Pd as measured performance.
+
+## Parameter regression audit
+
+The `tests/test_model.py` suite varies every one of the 28 fields in the scenario model independently, checks the expected response direction, and checks sensor-disable and RF-off invariants. `tests/test_optimization.py` checks sweep reproducibility, trial-count/seed sensitivity and bounded results. GitHub Actions runs these tests on each push.
+
+**Scope limitation:** The Research Validation page's weather, RCS and acoustic dB controls currently record metadata only and do not affect the Monte Carlo output. The scenario page has a separate normalized heuristic model. The Design Space page's controls change the synthetic sampling experiment, not calibrated physical hardware. Therefore a complete end-to-end, physics-valid input/output acceptance test is not yet possible; calibration and UI interaction testing are still required.
+
+Run locally: `python -m pip install -r requirements.txt pytest && python -m pytest -q tests/`.
