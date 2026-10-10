@@ -10,7 +10,7 @@ with st.sidebar:
     weather=st.selectbox("Weather",["Clear","Inside cloud","Light rain","Heavy rain","Snow","High wind"])
     rcs=st.selectbox("Radar cross-section class",["Small","Medium","Large"])
     rf_emits=st.checkbox("Aircraft emits RF",False)
-    acoustic_dbspl=st.selectbox("Acoustic signature (dB SPL)",[45,60,75])
+    acoustic_dbspl=st.selectbox("Acoustic signature (dB SPL)",list(range(0,76,5)),index=12,help="Sound pressure level at an unspecified reference location, in 5 dB increments from 0 to 75 dB SPL. 0 dB SPL is a reference sound pressure, not zero sound. This input is currently recorded as scenario metadata only and does not change this page’s Monte Carlo results.")
     st.header("Experiment")
     seed=st.number_input("Reproducible random seed",0,999999,42)
     n=st.select_slider("Trials per class",[100,500,1000,3000,5000],value=1000)
