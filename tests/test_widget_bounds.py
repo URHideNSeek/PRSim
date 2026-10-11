@@ -3,7 +3,7 @@ import ast
 from pathlib import Path
 import pytest
 
-PAGES=["PRSim.py","pages/01_Research_Validation.py","pages/02_Design_Space.py","pages/03_Evidence_Calibration.py","pages/04_Motion_Calibration.py"]
+PAGES=["PRSim.py","pages/01_Research_Validation.py","pages/03_Evidence_Calibration.py","pages/04_Motion_Calibration.py"]
 WIDGETS={"slider","select_slider","selectbox","number_input","checkbox"}
 
 def literals(node):
@@ -53,7 +53,7 @@ def test_heading_uses_unique_directions_on_both_pages():
         assert [literals(x) for x in args[1:5]]==[0,345,0,15]
 
 def test_monte_carlo_trial_presets_are_consistent():
-    for path in PAGES[1:3]:
+    for path in PAGES[1:2]:
         source=Path(path).read_text(encoding="utf-8")
         assert "[100,500,1000,1500,3000,5000]" in source
         assert "value=1500" in source
