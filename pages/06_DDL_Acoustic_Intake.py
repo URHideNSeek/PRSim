@@ -8,7 +8,7 @@ from ddl_acoustic import SOURCE_URL,parse_zip_manifest,coverage,metadata_csv,par
 from audio_features import wav_features,MAX_WAV_BYTES
 
 st.set_page_config(page_title="PRSim | DDL Acoustic Intake",layout="wide")
-st.title("DDL Acoustic Dataset Intake")
+st.title("E10 — DDL Acoustic Intake")
 protocol=EXTRA["ddl"]
 st.markdown("**Collection procedure:** "+protocol[1])
 st.markdown("**Required data:** "+protocol[2])
