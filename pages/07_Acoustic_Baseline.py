@@ -13,6 +13,7 @@ st.markdown("**Instruments:** "+protocol[3])
 st.info("Main-page probability impact: "+protocol[4])
 st.warning("Exploratory benchmark only. The model is not calibrated for actual microphone sensitivity, drone detection range, or field probability of detection.")
 st.markdown("Upload the **WAV feature inspection CSV** exported from DDL Acoustic Intake, or an equivalent dataset of measured recordings. Required columns: `recording_session_id`, `target_present`, `rms_dbfs`, `spectral_centroid_hz`. Include independent real recording sessions with target-present and target-absent clips. The 20-file DDL preview limit usually will not provide enough training observations; use a separately processed and validated dataset for this benchmark.")
+st.download_button("Download input CSV template","recording_session_id,target_present,rms_dbfs,spectral_centroid_hz\\n".replace("\\n","\n"),file_name="acoustic_features_template.csv",mime="text/csv")
 uploaded=st.file_uploader("Upload acoustic features CSV",type=["csv"],help="Only permitted, nonrestricted recordings. No raw audio is needed for this evaluation.")
 pfa=st.select_slider("Target false-alarm fraction",options=[.01,.02,.05,.10,.20],value=.05,help="Selects a threshold using training-session background features only.")
 if uploaded is not None:
