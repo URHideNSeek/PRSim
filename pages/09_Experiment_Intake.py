@@ -41,9 +41,9 @@ for tab,selected in zip(tabs,EXPERIMENTS):
                         pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05,key="e08_pfa")
                         if st.button("Evaluate held-out scores",key="e08_run"):
                             try:
-                                scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in rows if r["available"]=="1"]
+                                scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in sensor_rows if r["available"]=="1"]
                                 report=evaluate_holdout(scores,pfa,holdout)
-                                st.session_state["validation_e08"]={**report,"source":"E08","scope":"available observations; session-held-out","sensor_id":"unassigned"}
+                                st.session_state["validation_e08"]={**report,"source":"E08","scope":"available observations; session-held-out","sensor_id":sensor}
                             a,b=st.columns(2)
                                 a.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
                                 b.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
