@@ -5,7 +5,7 @@ from experiment_protocols import EXTRA
 from acoustic_baseline import parse_feature_csv,evaluate_acoustic_baseline
 
 st.set_page_config(page_title="PRSim | Acoustic Baseline",layout="wide")
-st.title("Acoustic Feature Baseline")
+st.title("E11 — Acoustic Baseline")
 protocol=EXTRA["baseline"]
 st.markdown("**Collection procedure:** "+protocol[1])
 st.markdown("**Required data:** "+protocol[2])
