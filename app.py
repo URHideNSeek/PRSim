@@ -5,14 +5,13 @@ pages = [
     st.Page("PRSim.py", title="PRSim · Simulator", icon=":material/radar:", default=True),
     st.Page("pages/08_Research_Evidence.py", title="Tools · References & Datasets", icon=":material/menu_book:"),
     st.Page("pages/01_Research_Validation.py", title="Tools · Research Validation", icon=":material/science:"),
-    # Ordered by recommended experiment execution, not by legacy experiment ID.
-    # Keep legacy IDs stable for existing CSV schemas, manifests, and test references.
-    st.Page("pages/E04_Receiver_and_Reference.py", title="E04 · Receiver and Reference", icon=":material/science:"),
-    st.Page("pages/09_Controlled_RF.py", title="E12 · Controlled RF Characterization", icon=":material/tune:"),
+    # Canonical E01–E12 labels follow execution order. Legacy source filenames and\n    # internal E01–E08 schema keys remain supported for compatibility.
+    st.Page("pages/E04_Receiver_and_Reference.py", title="E04 · Microphone Characterization", icon=":material/science:"),
+    st.Page("pages/09_Controlled_RF.py", title="E12 · Multisensor Evaluation", icon=":material/tune:"),
     st.Page("pages/E03_Passive_RF_Background.py", title="E03 · Passive RF Background", icon=":material/science:"),
     st.Page("pages/E01_Microphone_Characterization.py", title="E01 · Microphone Characterization", icon=":material/science:"),
-    st.Page("pages/06_DDL_Acoustic_Intake.py", title="E10 · DDL Acoustic Intake", icon=":material/audio_file:"),
-    st.Page("pages/07_Acoustic_Baseline.py", title="E11 · Acoustic Baseline", icon=":material/graphic_eq:"),
+    st.Page("pages/06_DDL_Acoustic_Intake.py", title="E11 · Motion Calibration", icon=":material/audio_file:"),
+    st.Page("pages/07_Acoustic_Baseline.py", title="E10 · Target Geometry and Motion", icon=":material/graphic_eq:"),
     st.Page("pages/E07_Environmental_Characterization.py", title="E07 · Environmental Characterization", icon=":material/science:"),
     st.Page("pages/E02_Aircraft_Acoustics.py", title="E02 · Aircraft Acoustics", icon=":material/science:"),
     st.Page("pages/E05_Radar_Background_and_Clutter.py", title="E05 · Radar Background and Clutter", icon=":material/science:"),
