@@ -26,12 +26,13 @@ if uploaded is not None:
         c4.metric("Real samples",report["real_files"])
         c5.metric("Synthetic samples",report["synthetic_files"])
         c6.metric("Recording sessions",report["recording_sessions"])
+        st.caption("Sessions with both real target and background recordings: "+str(report["both_class_sessions"]))
         if rejected:
             st.warning(f"{len(rejected)} WAV filenames did not match the documented DDL field convention. They were excluded.")
         if report["ready_for_holdout"]:
-            st.success("Preliminary metadata coverage: multiple recording sessions and both classes in real recordings.")
+            st.success("Preliminary metadata coverage: two or more independent sessions each contain real target and background recordings. This is necessary but not sufficient for validation.")
         else:
-            st.info("Insufficient metadata coverage for independent target/background evaluation. This does not mean the recordings are unusable.")
+            st.info("Not enough independent sessions containing both real target and background recordings for the simple holdout design. Other evaluation designs may be possible.")
         if rows:
             frame=pd.DataFrame(rows)
             st.dataframe(frame.head(1000),hide_index=True,use_container_width=True)
