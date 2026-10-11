@@ -59,3 +59,11 @@ The navigation now labels the main page **PRSim** while keeping `app.py` as the 
 The main PRSim page now includes illuminator distance, illuminator bearing relative to the receiver-to-target line, and X-band carrier frequency. It computes the idealized bistatic path-length rate and Doppler shift using target ground speed and sensor-relative heading, assuming a stationary illuminator and receiver and a 2D flat geometry. At zero target range, or coincident illuminator/target positions, the geometry is marked undefined.
 
 These are **geometric observables, not detection probabilities**. The three per-sensor synthetic detection probabilities intentionally remain unchanged with motion; modeling motion-dependent Pd requires a verified illuminator waveform, bistatic clutter/noise distributions, receiver characteristics and experimental calibration. See `bistatic_geometry.py` and `tests/test_bistatic_geometry.py`.
+
+## Availability and clutter audit remediation
+
+Main-page per-modality synthetic Pd now uses conditional Gaussian-score probability multiplied by an assumed modality availability: radar = illuminator availability × (1 − common outage), RF/acoustic = (1 − common outage). This is a simplifying independence assumption; individual RF and acoustic uptime are not characterized. The displayed false-alarm proxy includes common outage but does not incorporate clutter-dependent score distributions and is **not fused Pfa**. No validated fused Pd is presented.
+
+The duplicate normalized radar clutter/interference slider was removed from the main UI; the remaining reflected clutter CNR (dB) control still uses an uncalibrated mapping. The legacy model field remains for backward compatibility and test coverage, fixed to zero by the main UI. The top-level threshold decision remains a deterministic heuristic and should not be conflated with these statistical probabilities.
+
+Scientific integration of the main and Monte Carlo models, measured false-alarm statistics, and field calibration remain outstanding.
