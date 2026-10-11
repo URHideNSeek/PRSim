@@ -169,3 +169,24 @@ Test categories:
 - Main page: input-to-output response, documented motion-only parameters, threshold behavior, and disabled modalities.
 
 These are **automated parsing and model tests**, not browser-driven uploads, field validation, or proof of deployed Streamlit availability. Actual GitHub Actions results must be checked separately.
+
+## Recommended experiment execution order (October 2026)
+
+All experiment navigation labels follow `E## · Experiment Name`. **E-numbers are persistent experiment/data identifiers, not chronological step numbers.** Their original IDs are intentionally retained to protect CSV schemas, saved manifests, and existing tests. The Streamlit navigation is ordered by the recommended dependencies:
+
+| Step | Experiment | Prerequisite / purpose |
+| --- | --- | --- |
+| 1 | E04 · Receiver and Reference | Establish instrument timing, gain, and reference-channel behavior |
+| 2 | E12 · Controlled RF Characterization | Validate known, conducted RF stimuli and receiver measurements |
+| 3 | E03 · Passive RF Background | Record ambient target-absent RF background independently |
+| 4 | E01 · Microphone Characterization | Calibrate audio channels before collecting acoustic evidence |
+| 5 | E10 · DDL Acoustic Intake | Inspect provenance and ingest licensed reference recordings |
+| 6 | E11 · Acoustic Baseline | Evaluate independent background and holdout audio sessions |
+| 7 | E07 · Environmental Characterization | Establish synchronized environmental logging before field runs |
+| 8 | E02 · Aircraft Acoustics | Capture separately labeled, authorized target/background recordings |
+| 9 | E05 · Radar Background and Clutter | Characterize background and known references |
+| 10 | E06 · Target Geometry and Motion | Validate surveyed geometry and synchronization |
+| 11 | E09 · Motion Calibration | Compare measured motion observables against modeled geometry |
+| 12 | E08 · Multisensor Evaluation | Independently evaluate synchronized held-out multisensor observations |
+
+Some instrument and environmental preparations can proceed in parallel; final E08 evaluation depends on adequate independent measurements. Controlled RF source measurements are **not** equivalent to passive illumination. A schema-valid upload or a sample-count gate is not evidence of a calibrated detector.
