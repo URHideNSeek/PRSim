@@ -1,6 +1,6 @@
 from model import Scenario, evaluate
 from bistatic_geometry import Geometry, bistatic_observables
-from probability_demo import synthetic_detection_probability, synthetic_false_alarm_probability
+from probability_demo import synthetic_detection_probability, synthetic_false_alarm_probability, availability_adjusted_probability, availability_adjusted_false_alarm_probability
 import pandas as pd
 import streamlit as st
 
@@ -40,7 +40,6 @@ with st.sidebar:
     illumination = st.slider("Illuminator availability", 0., 1., .85, .05, help="Assumed fraction of time an external X-band signal is usable for passive radar. Zero means no radar evidence.")
     reference = st.slider("Reference-channel quality", 0., 1., .8, .05, help="How cleanly the receiver observes the external reference signal. Higher values improve synthetic radar evidence.")
     sync_error = st.slider("Synchronization error index", 0., 1., .15, .05, help="How poorly receiver timing and frequency align. Larger error reduces synthetic radar evidence.")
-    clutter = st.slider("Clutter/interference index", 0., 1., .3, .05, help="Legacy normalized radar interference input. This is separate from background reflected clutter.")
     clutter_cnr_db = st.slider("Background reflected clutter CNR (dB)", -20, 40, 0, 5, help="Clutter-to-noise ratio in decibels: strength of reflections from terrain, buildings and vegetation relative to receiver noise. Larger values mean stronger unwanted reflections. Detection impact is still an uncalibrated heuristic.")
     radar_noise = st.slider("Receiver noise index", 0., 1., .2, .05, help="Extra noise from radar receiver electronics. Higher means worse synthetic radar evidence.")
     bandwidth = st.slider("Normalized processed bandwidth", 0.1, 1., .6, .1, help="Relative width of the radar signal being processed, not a frequency in hertz. Higher slightly increases the synthetic score.")
@@ -61,7 +60,7 @@ with st.sidebar:
 scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,emits=emits,audio=audio,range_m=range_m,speed_mps=speed_mps,heading_deg=heading_deg,
     observation=observation,update=update,fusion_weight=fusion_weight,fail=fail,
     radar_on=radar_on,illumination=illumination,reference=reference,sync_error=sync_error,
-    clutter=clutter,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
+    clutter=0.0,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
     rf_sensitivity=rf_sensitivity,rf_interference=rf_interference,rf_coverage=rf_coverage,
     rf_noise=rf_noise,acoustic_on=acoustic_on,microphone_quality=microphone_quality,
     mic_spacing=mic_spacing,audio_noise=audio_noise,wind_noise=wind_noise,channel_sync=channel_sync)
@@ -91,25 +90,25 @@ if geometry["valid"]:
 else:
     st.info("Bistatic geometry unavailable: "+geometry["reason"])
 st.caption("Motion observables are geometric predictions. For measured motion-dependent detection performance, use the Motion Calibration page. The synthetic probabilities below remain independent of target motion.")
-st.subheader("Illustrative detection probabilities", help="Probabilities are based on the same researcher-defined threshold and an assumed Gaussian model. They are not measured performance.")
+st.subheader("Illustrative detection probabilities", help="These are assumed Gaussian-score probabilities, adjusted for modeled availability. Not calibrated sensor performance.")
 sensor_data = [
-    ("Radar", radar, radar_on),
-    ("RF", rf, rf_on and emits),
-    ("Acoustic", acoustic, acoustic_on),
+    ("Radar", radar, radar_on, illumination * (1-fail)),
+    ("RF", rf, rf_on and emits, (1-fail)),
+    ("Acoustic", acoustic, acoustic_on, (1-fail)),
 ]
 pcols = st.columns(4)
-for col, (name, score, enabled) in zip(pcols[:3], sensor_data):
-    probability = synthetic_detection_probability(score, threshold=threshold, enabled=enabled)
+for col, (name, score, enabled, availability) in zip(pcols[:3], sensor_data):
+    probability = availability_adjusted_probability(score, threshold=threshold, availability=availability, enabled=enabled)
     col.metric(f"{name} detection probability", "N/A" if probability is None else f"{probability:.1%}",
-        help="Illustrative probability of exceeding the selected evidence threshold. Gaussian score standard deviation = 0.20; not validated. N/A means the modality is disabled or the target has no observable emissions.")
-pcols[3].metric("False-alarm probability", f"{synthetic_false_alarm_probability(threshold):.1%}",
-    help="Illustrative probability that background-only evidence exceeds the selected threshold. Not a measured false-alarm rate.")
+        help="Synthetic probability per observation opportunity: assumed uptime × Gaussian probability of exceeding the selected threshold. Radar uptime includes illuminator availability. RF/acoustic uptime currently includes common outage only. Not field validated.")
+pcols[3].metric("False-alarm probability", f"{availability_adjusted_false_alarm_probability(threshold,availability=1-fail):.1%}",
+    help="Synthetic false-alarm fraction per observation opportunity with common outage included. It is NOT a calibrated fusion false-alarm rate and does not model clutter-dependent background statistics.")
 st.subheader("Sensor evidence", help="Normalized synthetic evidence scores from 0 to 1, not probabilities.")
 ecols = st.columns(3)
-for col, (name, score, enabled) in zip(ecols, sensor_data):
+for col, (name, score, enabled, availability) in zip(ecols, sensor_data):
     col.metric(f"{name} evidence", f"{score:.2f}" if enabled else "N/A",
         help="Normalized synthetic evidence score. Not a calibrated signal measurement or detection probability.")
-st.caption("Shared threshold model: background score N(0, 0.20²), target-present score N(sensor evidence, 0.20²). Raising the threshold lowers both synthetic detection and false-alarm probabilities. This assumed model is not calibrated; actual detection probability remains unknown.")
+st.caption("Model: Gaussian score SD 0.20, with independent availability adjustment. Radar availability = illuminator availability × (1 − common outage); RF/acoustic = 1 − common outage. The displayed false-alarm value is a common-outage-adjusted background proxy, not a fused Pfa. These assumptions are uncalibrated.")
 st.subheader("Five comparative outputs", help="Radar-only versus fused results. These are simplified indicators, not field measurements.")
 st.dataframe(results, use_container_width=True)
 st.caption("Output guide: Detection evidence = normalized synthetic score; latency = illustrative time proxy; tracking uncertainty = confidence proxy; environmental retention = assumed weather resilience; availability = modeled uptime. These are not measured sensor performance.")
@@ -118,5 +117,5 @@ st.subheader("Evidence comparison", help="Visual comparison of radar-only and fu
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 
 st.info("Actual aircraft detection: NOT DETERMINED. The probabilities above are illustrative Gaussian-model outputs, not calibrated sensor performance. Research Validation contains a separate synthetic Monte Carlo study.")
-st.caption("No target-emission RF credit when RF is disabled. Stereo audio does not independently establish range. RCS in m² and clutter CNR in dB are converted to scores using heuristic equations, not validated physics. SAR and GMTI remain unimplemented.")
+st.caption("No RF-emission credit when RF is disabled. Stereo audio does not independently establish range. RCS and clutter CNR map to heuristic scores. The duplicate legacy clutter control was removed; measured clutter statistics and fused detection remain unimplemented.")
 st.download_button("Export scenario results CSV", results.to_csv().encode(), file_name="prsim_results.csv", mime="text/csv", help="Download the displayed synthetic result table as a CSV file.")
