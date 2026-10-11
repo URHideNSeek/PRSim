@@ -63,7 +63,12 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
-st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor). Motion is recorded but is not yet connected to the detection model.")
+st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor).")
+motion=out["motion"]
+motion_cols=st.columns(2)
+motion_cols[0].metric("Radial ground speed (m/s)",f'{motion["radial_speed_mps"]:+.2f}',help="Ground-speed component along the sensor-to-target line. Positive means moving away; negative means moving toward the sensor. This is geometry, not radar Doppler.")
+motion_cols[1].metric("Transverse ground speed (m/s)",f'{motion["transverse_speed_mps"]:+.2f}',help="Ground-speed component perpendicular to the sensor-to-target line. Sign distinguishes opposite transverse directions.")
+st.warning("Motion inputs are not yet part of the detection-probability model. Speed and heading change the motion components above, but radar/RF/acoustic probabilities remain unchanged until a validated bistatic measurement model is available.")
 st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
 finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
