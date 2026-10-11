@@ -75,3 +75,11 @@ The **Published Datasets** Streamlit page catalogs external acoustic, radar RCS,
 A new `dataset_validation.py` evaluator accepts independently supplied CSV rows with `session_id,target_present,detector_score`, selects a decision threshold using training-session target-absent observations only, and computes target-present detection and target-absent false-alarm fractions on a separate held-out session. This is an initial validation workflow, not physical calibration. It deliberately does not change the main page's synthetic Pd values. For defensible use, ensure detector scores, ground truth, session independence, environmental conditions, and confidence intervals are documented.
 
 Sources: https://zenodo.org/records/6459183 ; https://zenodo.org/records/15405530 ; https://github.com/kitoweeknd/RFUAV ; ITU-R P.838-3 and P.676-13.
+
+## DDL acoustic subset intake
+
+The **DDL Acoustic Intake** page reads filenames from a small ZIP subset (maximum 100 MB) of the published DDL field-recording archive, without extracting or processing audio. The parser follows the published 49-character filename layout (timestamp, drone/background class, bearing, range, altitude, temperature, real/synthetic flag, flight/recording session, sequence). It exports parsed metadata CSV and flags insufficient class/session coverage. No raw DDL audio is bundled with PRSim, and no classifier has been trained or validated.
+
+Source: https://zenodo.org/records/6459183 . The complete record lists approximately 12.6 GB of real data and 4.6 GB of synthesized data. Review reuse permissions and confirm that filenames in the selected archive match the published convention. Do not upload the full archive to Streamlit Cloud.
+
+Next: select a permitted subset containing drone and background recordings from independent sessions; verify metadata; build and validate an acoustic feature-extraction and classification pipeline with holdout recordings. Avoid claiming calibrated SPL or range-based detection from filename metadata alone.
