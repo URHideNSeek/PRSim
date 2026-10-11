@@ -1,4 +1,5 @@
 from model import Scenario, evaluate
+from shared_probability import scenario_probabilities
 from bistatic_geometry import Geometry, bistatic_observables
 from probability_demo import synthetic_detection_probability, synthetic_false_alarm_probability, availability_adjusted_probability, availability_adjusted_false_alarm_probability
 import pandas as pd
@@ -70,7 +71,8 @@ radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
 st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
-finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
+shared = scenario_probabilities(scenario,threshold)
+finding = shared["evidence"]["detected"]
 if finding:
     st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
@@ -83,11 +85,12 @@ sensor_data = [
 ]
 pcols = st.columns(4)
 for col, (name, score, enabled, availability) in zip(pcols[:3], sensor_data):
-    probability = availability_adjusted_probability(score, threshold=threshold, availability=availability, enabled=enabled)
+    probability = shared[{"Radar":"radar_pd","RF":"rf_pd","Acoustic":"acoustic_pd"}[name]]
     col.metric(f"{name} detection probability", "N/A" if probability is None else f"{probability:.1%}",
         help="Synthetic probability per observation opportunity: assumed uptime × Gaussian probability of exceeding the selected threshold. Radar uptime includes illuminator availability. RF/acoustic uptime currently includes common outage only. Not field validated.")
-pcols[3].metric("False-alarm probability", f"{availability_adjusted_false_alarm_probability(threshold,availability=1-fail):.1%}",
+pcols[3].metric("False-alarm probability", f"{shared['false_alarm_probability']:.1%}",
     help="Synthetic false-alarm fraction per observation opportunity with common outage included. It is NOT a calibrated fusion false-alarm rate and does not model clutter-dependent background statistics.")
+st.metric("Illustrative fused detection probability",f"{shared['fused_pd']:.1%}" if shared["fused_pd"] is not None else "N/A",help="Same shared scenario probability function used in Design Space. This is a heuristic fused Gaussian estimate, not measured joint fusion performance.")
 st.subheader("Sensor evidence", help="Normalized synthetic evidence scores from 0 to 1, not probabilities.")
 ecols = st.columns(3)
 for col, (name, score, enabled, availability) in zip(ecols, sensor_data):
