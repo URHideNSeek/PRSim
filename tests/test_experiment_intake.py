@@ -22,11 +22,10 @@ def test_missing_columns_rejected():
         with pytest.raises(ValueError):validate_csv(key,"wrong_column\nabc\n")
 
 def test_pages_parse_and_navigation_is_consolidated():
-    for path in ("pages/08_Research_Evidence.py","pages/01_Research_Validation.py","pages/02_Design_Space.py"):
+    for path in ("pages/08_Research_Evidence.py","pages/01_Research_Validation.py"):
         ast.parse(Path(path).read_text(encoding="utf-8"))
     navigation=Path("app.py").read_text(encoding="utf-8")
     assert "08_Research_Evidence.py" in navigation
     assert "05_Published_Datasets.py" not in navigation
     assert "03_Evidence_Calibration.py" not in navigation
-    design=Path("pages/02_Design_Space.py").read_text(encoding="utf-8")
-    assert "Desired synthetic detection probability" in design
+    assert "02_Design_Space.py" not in navigation
