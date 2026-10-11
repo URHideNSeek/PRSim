@@ -91,6 +91,20 @@ for col, (name, score, enabled, availability) in zip(pcols[:3], sensor_data):
 pcols[3].metric("False-alarm probability", f"{shared['false_alarm_probability']:.1%}",
     help="Synthetic false-alarm fraction per observation opportunity with common outage included. It is NOT a calibrated fusion false-alarm rate and does not model clutter-dependent background statistics.")
 st.metric("Illustrative fused detection probability",f"{shared['fused_pd']:.1%}" if shared["fused_pd"] is not None else "N/A",help="Same shared scenario probability function used in Design Space. This is a heuristic fused Gaussian estimate, not measured joint fusion performance.")
+st.subheader("Experimental evidence comparison")
+loaded=[(key,st.session_state.get("intake_"+key)) for key in ("E01","E02","E03","E04","E05","E06","E07","E08")]
+loaded=[(key,item) for key,item in loaded if item]
+if loaded:
+    st.caption("Imported records validated in this browser session. Uploads do not change the synthetic probabilities above.")
+    st.dataframe(pd.DataFrame([{"Experiment":key,"Records":item["records"],"Status":item["status"]} for key,item in loaded]),hide_index=True,use_container_width=True)
+else:
+    st.caption("No experiment observations imported in this session.")
+measured=st.session_state.get("validation_e08")
+if measured:
+    st.metric("E08 held-out measured detection fraction",f'{measured["holdout_pd"]:.1%}')
+    st.metric("E08 held-out measured false-alarm fraction",f'{measured["holdout_pfa"]:.1%}')
+    st.caption("Measured results are specific to sensor "+str(measured.get("sensor_id","unknown"))+" and held-out session "+str(measured["holdout_session"])+". They are not directly comparable to the selected synthetic scenario without matching conditions and calibration.")
+st.info("Actual-data adjustment to main-page Pd: none. Calibration and applicability review are required before replacing synthetic probabilities.")
 st.subheader("Sensor evidence", help="Normalized synthetic evidence scores from 0 to 1, not probabilities.")
 ecols = st.columns(3)
 for col, (name, score, enabled, availability) in zip(ecols, sensor_data):
