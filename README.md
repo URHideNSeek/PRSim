@@ -135,3 +135,11 @@ The legacy seed/trial inputs on Design Space are retained for compatibility but 
 The former Evidence & Collaboration navigation item is now **References & Datasets**. It is a read-only, filterable provenance catalog of technical standards, published datasets, implemented mathematical methods and internal synthetic assumptions. Each entry explains what is actually used in code, the implementation location, the evidence status, and the limitation. No published dataset has been imported to calibrate the live probability model.
 
 E01–E08 upload templates and validation have moved to a separate **Experiment Intake** navigation page, preserving the research workflow without mixing it into the bibliography. The DDL Acoustic Intake and Acoustic Baseline pages remain separate.
+
+## Validation workspaces
+
+Experiment Intake now has separate E01–E08 tabs. Each includes purpose, collection procedure, required data, instruments, CSV template, schema validation, and export. Validated upload counts are exposed to the main dashboard within the same Streamlit browser session. E08 held-out detector results can be shown alongside the main synthetic probabilities, but do **not** overwrite or recalibrate them. E08 results must be evaluated per sensor and are conditional on available observations.
+
+Motion Calibration and Acoustic Baseline now include collection instructions and downloadable CSV templates; DDL Acoustic Intake includes its source-recording protocol. No user uploads are persisted as a durable server-side dataset by this implementation. A validated import means the CSV passed schema checks, not that its measurements are calibrated or statistically representative.
+
+The main dashboard explicitly reports that the actual-data adjustment to synthetic Pd is **none** until a documented calibration and scenario applicability check can justify a replacement. All reported empirical held-out rates must retain sensor, session, population, and uncertainty context.
