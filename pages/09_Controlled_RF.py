@@ -5,7 +5,7 @@ import streamlit as st
 from controlled_rf import REQUIRED, parse_controlled_rf, baseline_summary
 
 st.set_page_config(page_title="PRSim | Controlled RF", layout="wide")
-st.title("Controlled RF Measurement — Laboratory")
+st.title("E12 — Controlled RF Characterization")
 st.caption("Conducted, shielded receiver characterization using a known source; measurements remain separate from synthetic probabilities.")
 st.info("Keysight E8267D Option 520: nominal RF coverage 250 kHz–20 GHz. Installed modulation/baseband options are unverified. This page does not connect to or control an instrument.")
 st.warning("A laboratory RF source is not an ambient passive illuminator. Captured measurements do not establish passive-radar detection capability.")
