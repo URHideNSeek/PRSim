@@ -5,12 +5,12 @@ def test_bounded_search_always_terminates():
     result=seek_goal(desired_pd=.99,target_pfa=.05,seed=42,trials=100,max_stages=1)
     assert len(result["stages"])==1
     assert result["status"] in ("closed_synthetic","not_feasible_within_bounds")
-    assert len(result["candidates"])==108
+    assert len(result["candidates"])==81
 
 def test_expanded_search_does_not_exceed_stage_cap():
     result=seek_goal(desired_pd=.99,target_pfa=.05,seed=42,trials=100,max_stages=3)
     assert 1<=len(result["stages"])<=3
-    assert len(result["candidates"])<=324
+    assert len(result["candidates"])<=243
 
 def test_goal_closure_meets_both_constraints():
     result=seek_goal(desired_pd=.5,target_pfa=.05,seed=42,trials=100,max_stages=3)
