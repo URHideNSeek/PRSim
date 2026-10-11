@@ -37,3 +37,15 @@ def test_parse_csv_and_reject_invalid_label():
     text="session_id,target_present,detector_score\ntrain,0,0.1\nholdout,1,0.8\n"
     assert len(parse_labeled_scores(text))==2
     with pytest.raises(ValueError):parse_labeled_scores(text.replace("holdout,1","holdout,2"))
+
+def test_wilson_intervals_bounded_and_cover_estimates():
+    from dataset_validation import wilson_interval
+    for n in [1,10,30,100,1000]:
+        for hits in [0,n//2,n]:
+            lo,hi=wilson_interval(hits,n)
+            assert 0<=lo<=hits/n<=hi<=1
+
+def test_holdout_report_includes_confidence_intervals():
+    report=evaluate_holdout(rows(),.05,"holdout")
+    assert "holdout_pd_ci95" in report
+    assert "holdout_pfa_ci95" in report
