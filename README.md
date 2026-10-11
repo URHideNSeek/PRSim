@@ -129,3 +129,9 @@ The main PRSim page and Design Space now call `shared_probability.scenario_proba
 Design Space evaluates 81 candidates per stage across six weather scenarios and both RF emission states, aggregating **the same** per-scenario fused Pd values used by the main page. The evidence threshold is researcher selectable on both pages. Matching scenario parameters and threshold therefore produce exactly matching synthetic probabilities. `tests/test_shared_probability_parity.py` verifies this for all weather labels, both RF states and multiple thresholds, and checks that the design candidate mean equals the mean of individual main-page scenario evaluations.
 
 The legacy seed/trial inputs on Design Space are retained for compatibility but **do not change analytic probabilities**. Its `empirical_pfa` CSV column is legacy-named and now represents the analytic synthetic false-alarm proxy, not an empirical estimate. Search stages that request normalized quality greater than 1 are clipped by the scenario model, so later stages can legitimately produce no additional benefit. Do not interpret synthetic closure as validated sensor performance.
+
+## Publications, References & Datasets page
+
+The former Evidence & Collaboration navigation item is now **References & Datasets**. It is a read-only, filterable provenance catalog of technical standards, published datasets, implemented mathematical methods and internal synthetic assumptions. Each entry explains what is actually used in code, the implementation location, the evidence status, and the limitation. No published dataset has been imported to calibrate the live probability model.
+
+E01–E08 upload templates and validation have moved to a separate **Experiment Intake** navigation page, preserving the research workflow without mixing it into the bibliography. The DDL Acoustic Intake and Acoustic Baseline pages remain separate.
