@@ -1,20 +1,27 @@
-"""Illustrative detection-probability mapping for UI demonstration only.
+"""Illustrative Gaussian score distributions, NOT calibrated sensor performance.
 
-Assumes target-absent evidence is N(0,1), target-present evidence is N(mu,1),
-with mu=3*normalized evidence. At a fixed one-sided 5% false-alarm threshold,
-the resulting analytic tail probability is a SYNTHETIC demonstration, not a
-calibrated detector or a probability inferred from radar/acoustic physics.
+Both target-present and target-absent scores are modeled with standard deviation
+0.20 on the same normalized evidence scale used by the dashboard threshold.
+Background mean = 0; target-present mean = the current modality evidence.
+No fitted distributions, real-world detection rates, or ROC calibration implied.
 """
 import math
 
-FALSE_ALARM_RATE = 0.05
-THRESHOLD_Z = 1.6448536269514722
-SYNTHETIC_SHIFT_SCALE = 3.0
+SYNTHETIC_SCORE_SIGMA = 0.20
 
-def synthetic_detection_probability(evidence, enabled=True):
+def _survival(threshold, mean):
+    return 0.5 * math.erfc((threshold - mean) / (SYNTHETIC_SCORE_SIGMA * math.sqrt(2)))
+
+def synthetic_detection_probability(evidence, threshold=0.30, enabled=True):
     if not enabled:
         return None
     if not 0 <= evidence <= 1:
         raise ValueError("Evidence must be in [0, 1]")
-    mu = SYNTHETIC_SHIFT_SCALE * evidence
-    return 0.5 * math.erfc((THRESHOLD_Z - mu) / math.sqrt(2))
+    if not 0 <= threshold <= 1:
+        raise ValueError("Threshold must be in [0, 1]")
+    return _survival(threshold, evidence)
+
+def synthetic_false_alarm_probability(threshold=0.30):
+    if not 0 <= threshold <= 1:
+        raise ValueError("Threshold must be in [0, 1]")
+    return _survival(threshold, 0.0)
