@@ -13,6 +13,7 @@ st.markdown("**Instruments:** "+protocol[3])
 st.info("Main-page probability impact: "+protocol[4])
 st.info("The geometry model already predicts idealized Doppler. This page accepts experimental detector observations needed before speed and heading can be used to estimate defensible detection probabilities.")
 st.markdown("Upload a CSV containing **measured_doppler_hz**, **target_present** (0 or 1), **detector_score**, and **session_id**. Include both target-present and target-absent observations from multiple independent sessions.")
+st.download_button("Download input CSV template","session_id,target_present,measured_doppler_hz,detector_score\\n".replace("\\n","\n"),file_name="motion_measurements_template.csv",mime="text/csv")
 uploaded=st.file_uploader("Upload labeled measurement CSV",type=["csv"],help="Only use data you are authorized to process. Do not upload restricted or sensitive recordings to a public deployment.")
 if uploaded is not None:
     try:
