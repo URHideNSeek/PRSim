@@ -31,8 +31,8 @@ def test_invalid_threshold_rejected(threshold):
 def test_ui_uses_shared_threshold():
     from pathlib import Path
     src=Path("PRSim.py").read_text(encoding="utf-8")
-    assert "availability_adjusted_probability(score, threshold=threshold, availability=availability, enabled=enabled)" in src
-    assert "availability_adjusted_false_alarm_probability(threshold,availability=1-fail)" in src
+    assert "shared = scenario_probabilities(scenario,threshold)" in src
+    assert "shared[\'false_alarm_probability\']" in src
 
 def test_outage_reduces_unconditional_probability():
     for score in [.1,.3,.8]:
