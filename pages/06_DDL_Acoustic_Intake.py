@@ -3,7 +3,8 @@ import io
 import zipfile
 import pandas as pd
 import streamlit as st
-from ddl_acoustic import SOURCE_URL,parse_zip_manifest,coverage,metadata_csv
+from ddl_acoustic import SOURCE_URL,parse_zip_manifest,coverage,metadata_csv,parse_field_filename
+from audio_features import wav_features,MAX_WAV_BYTES
 
 st.set_page_config(page_title="PRSim | DDL Acoustic Intake",layout="wide")
 st.title("DDL Acoustic Dataset Intake")
@@ -36,6 +37,28 @@ if uploaded is not None:
             st.dataframe(frame.head(1000),hide_index=True,use_container_width=True)
             st.download_button("Download parsed metadata CSV",metadata_csv(rows),file_name="ddl_acoustic_metadata.csv",mime="text/csv")
             st.caption("Use recording-session separation to reduce leakage. Confirm that adjacent segments from the same flight or source recording do not appear in both training and holdout data.")
+            st.divider()
+            st.subheader("Experimental WAV feature inspection")
+            st.caption("This optional operation reads up to 20 real WAV recordings from the uploaded ZIP and extracts generic uncalibrated audio features. It does not train a drone detector or calculate detection probability.")
+            if st.button("Extract generic WAV features (max 20)",help="Inspect RMS dBFS, peak dBFS, spectral centroid, clipping, sample rate, and duration. No calibration to dB SPL."):
+                features=[]
+                errors=[]
+                with zipfile.ZipFile(io.BytesIO(uploaded.getvalue())) as archive:
+                    real_names={r["filename"] for r in rows if r["sample_type"]=="R"}
+                    candidates=[member for member in archive.infolist() if member.filename in real_names and member.file_size<=MAX_WAV_BYTES]
+                    for member in candidates[:20]:
+                        try:
+                            with archive.open(member) as stream:
+                                wav=stream.read(MAX_WAV_BYTES+1)
+                            features.append({"filename":member.filename,**wav_features(wav)})
+                        except (ValueError,EOFError,zipfile.BadZipFile) as exc:
+                            errors.append(f"{member.filename}: {exc}")
+                if features:
+                    st.dataframe(pd.DataFrame(features),hide_index=True,use_container_width=True)
+                    st.download_button("Export WAV feature inspection CSV",pd.DataFrame(features).to_csv(index=False),file_name="ddl_audio_features.csv",mime="text/csv")
+                if errors:
+                    st.warning(f"{len(errors)} WAV files were skipped due to invalid or unsupported format.")
+
     except (ValueError,zipfile.BadZipFile,UnicodeError) as exc:
         st.error(f"Unable to read DDL ZIP metadata: {exc}")
 st.divider()
