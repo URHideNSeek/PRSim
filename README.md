@@ -149,3 +149,9 @@ The main dashboard explicitly reports that the actual-data adjustment to synthet
 Each validation experiment is a separate Streamlit navigation page rather than a nested tab. E01 Microphone Characterization, E02 Aircraft Acoustics, E03 Passive RF Background, E04 Receiver and Reference, E05 Radar Background and Clutter, E06 Target Geometry and Motion, E07 Environmental Characterization, E08 Multisensor Evaluation. The existing specialist pages continue the sequence: E09 Motion Calibration, E10 DDL Acoustic Intake, E11 Acoustic Baseline.
 
 The E01–E08 pages reuse `experiment_pages.render_experiment` to preserve protocols, instruments, CSV templates, upload validation, and E08 held-out evaluation. The retired combined intake page was deleted. Existing model data and synthetic probability assumptions were not changed.
+
+## Synthetic sample upload smoke tests
+
+Run `python scripts/generate_sample_uploads.py` to create 11 **synthetic test-only** files under `sample_uploads/`: E01–E08 experiment CSVs, E09 motion CSV, E10 DDL-format WAV ZIP, and E11 acoustic feature CSV. Run `python -m pytest -q tests/test_sample_uploads.py` to exercise the actual CSV/ZIP parsers, manifests, E08 held-out evaluator, motion data validator, WAV feature extractor, and acoustic baseline evaluator. The test fixtures are intentionally fabricated and must not be used as field evidence.
+
+**Verification boundary:** Source-level and parser smoke tests do not prove the Streamlit browser upload widgets or cloud deployment work. Those require an independent end-to-end browser test. No live sensor probability calibration is implied.
