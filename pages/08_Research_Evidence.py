@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 from experiment_intake import EXPERIMENTS,template,validate_csv,manifest
+from dataset_validation import evaluate_holdout
 
 st.set_page_config(page_title="PRSim | Research Evidence",layout="wide")
 st.title("Research Evidence & Collaboration")
@@ -32,6 +33,24 @@ with tabs[2]:
             st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
             st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json")
             st.download_button("Export normalized CSV",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv")
+            if selected=="E08":
+                st.subheader("E08 independent evaluation")
+                sessions=sorted({r["session_id"] for r in rows})
+                if len(sessions)>1:
+                    holdout=st.selectbox("Held-out session",sessions)
+                    pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05)
+                    if st.button("Evaluate held-out scores"):
+                        try:
+                            scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in rows if r["available"]=="1"]
+                            report=evaluate_holdout(scores,pfa,holdout)
+                            st.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
+                            st.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
+                            st.download_button("Export evaluation",json.dumps(report,indent=2),file_name="E08_evaluation.json")
+                        except ValueError as exc:
+                            st.error(str(exc))
+                else:
+                    st.info("Multiple independent sessions required.")
+
         except (ValueError,UnicodeError) as exc:
             st.error(str(exc))
 st.caption("The intake checks schema and provenance only. It does not modify synthetic probabilities.")
