@@ -3,7 +3,7 @@ import ast
 from pathlib import Path
 import pytest
 
-PAGES=["PRSim.py","pages/01_Research_Validation.py","pages/02_Design_Space.py","pages/03_Evidence_Calibration.py"]
+PAGES=["PRSim.py","pages/01_Research_Validation.py","pages/02_Design_Space.py","pages/03_Evidence_Calibration.py","pages/04_Motion_Calibration.py"]
 WIDGETS={"slider","select_slider","selectbox","number_input","checkbox"}
 
 def literals(node):
@@ -62,5 +62,6 @@ def test_uncalibrated_inputs_are_explicitly_labeled():
     main=Path("PRSim.py").read_text(encoding="utf-8")
     validation=Path("pages/01_Research_Validation.py").read_text(encoding="utf-8")
     assert "not yet used in detection calculations" in main
-    assert "not yet connected to the detection model" in main
+    assert "They do NOT change radar/RF/acoustic detection probabilities" not in main
+    assert "synthetic probabilities below remain independent of target motion" in main
     assert "DO NOT incorporate these target inputs" in validation
