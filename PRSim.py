@@ -75,22 +75,6 @@ if finding:
     st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
     st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
-st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor).")
-motion=out["motion"]
-motion_cols=st.columns(2)
-motion_cols[0].metric("Radial ground speed (m/s)",f'{motion["radial_speed_mps"]:+.2f}',help="Ground-speed component along the sensor-to-target line. Positive means moving away; negative means moving toward the sensor. This is geometry, not radar Doppler.")
-motion_cols[1].metric("Transverse ground speed (m/s)",f'{motion["transverse_speed_mps"]:+.2f}',help="Ground-speed component perpendicular to the sensor-to-target line. Sign distinguishes opposite transverse directions.")
-geometry=bistatic_observables(Geometry(target_range_m=range_m,speed_mps=speed_mps,heading_deg=heading_deg,
-    illuminator_distance_m=illuminator_distance_m,illuminator_bearing_deg=illuminator_bearing_deg,
-    frequency_ghz=illuminator_frequency_ghz))
-st.subheader("Idealized passive bistatic motion observables",help="Derived from transmitter/target/receiver positions and target ground velocity. This is a geometric calculation, not a detection-performance model.")
-if geometry["valid"]:
-    g1,g2=st.columns(2)
-    g1.metric("Bistatic path rate (m/s)",f'{geometry["path_rate_mps"]:+.2f}',help="Time derivative of transmitter-to-target plus target-to-receiver path length.")
-    g2.metric("Idealized Doppler (Hz)",f'{geometry["doppler_hz"]:+.1f}',help="Negative path rate divided by RF wavelength, using a stationary transmitter and receiver. Sign convention is stated in the model.")
-else:
-    st.info("Bistatic geometry unavailable: "+geometry["reason"])
-st.caption("Motion observables are geometric predictions. For measured motion-dependent detection performance, use the Motion Calibration page. The synthetic probabilities below remain independent of target motion.")
 st.subheader("Illustrative detection probabilities", help="These are assumed Gaussian-score probabilities, adjusted for modeled availability. Not calibrated sensor performance.")
 sensor_data = [
     ("Radar", radar, radar_on, illumination * (1-fail)),
@@ -110,6 +94,22 @@ for col, (name, score, enabled, availability) in zip(ecols, sensor_data):
     col.metric(f"{name} evidence", f"{score:.2f}" if enabled else "N/A",
         help="Normalized synthetic evidence score. Not a calibrated signal measurement or detection probability.")
 st.caption("Model: Gaussian score SD 0.20, with independent availability adjustment. Radar availability = illuminator availability × (1 − common outage); RF/acoustic = 1 − common outage. The displayed false-alarm value is a common-outage-adjusted background proxy, not a fused Pfa. These assumptions are uncalibrated.")
+st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor).")
+motion=out["motion"]
+motion_cols=st.columns(2)
+motion_cols[0].metric("Radial ground speed (m/s)",f'{motion["radial_speed_mps"]:+.2f}',help="Ground-speed component along the sensor-to-target line. Positive means moving away; negative means moving toward the sensor. This is geometry, not radar Doppler.")
+motion_cols[1].metric("Transverse ground speed (m/s)",f'{motion["transverse_speed_mps"]:+.2f}',help="Ground-speed component perpendicular to the sensor-to-target line. Sign distinguishes opposite transverse directions.")
+geometry=bistatic_observables(Geometry(target_range_m=range_m,speed_mps=speed_mps,heading_deg=heading_deg,
+    illuminator_distance_m=illuminator_distance_m,illuminator_bearing_deg=illuminator_bearing_deg,
+    frequency_ghz=illuminator_frequency_ghz))
+st.subheader("Idealized passive bistatic motion observables",help="Derived from transmitter/target/receiver positions and target ground velocity. This is a geometric calculation, not a detection-performance model.")
+if geometry["valid"]:
+    g1,g2=st.columns(2)
+    g1.metric("Bistatic path rate (m/s)",f'{geometry["path_rate_mps"]:+.2f}',help="Time derivative of transmitter-to-target plus target-to-receiver path length.")
+    g2.metric("Idealized Doppler (Hz)",f'{geometry["doppler_hz"]:+.1f}',help="Negative path rate divided by RF wavelength, using a stationary transmitter and receiver. Sign convention is stated in the model.")
+else:
+    st.info("Bistatic geometry unavailable: "+geometry["reason"])
+st.caption("Motion observables are geometric predictions. For measured motion-dependent detection performance, use the Motion Calibration page. The synthetic probabilities below remain independent of target motion.")
 st.subheader("Five comparative outputs", help="Radar-only versus fused results. These are simplified indicators, not field measurements.")
 st.dataframe(results, use_container_width=True)
 st.caption("Output guide: Detection evidence = normalized synthetic score; latency = illustrative time proxy; tracking uncertainty = confidence proxy; environmental retention = assumed weather resilience; availability = modeled uptime. These are not measured sensor performance.")
