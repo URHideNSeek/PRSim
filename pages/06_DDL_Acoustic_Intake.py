@@ -3,11 +3,17 @@ import io
 import zipfile
 import pandas as pd
 import streamlit as st
+from experiment_protocols import EXTRA
 from ddl_acoustic import SOURCE_URL,parse_zip_manifest,coverage,metadata_csv,parse_field_filename
 from audio_features import wav_features,MAX_WAV_BYTES
 
 st.set_page_config(page_title="PRSim | DDL Acoustic Intake",layout="wide")
 st.title("DDL Acoustic Dataset Intake")
+protocol=EXTRA["ddl"]
+st.markdown("**Collection procedure:** "+protocol[1])
+st.markdown("**Required data:** "+protocol[2])
+st.markdown("**Instruments:** "+protocol[3])
+st.info("Main-page probability impact: "+protocol[4])
 st.markdown(f"**Dataset:** [Safavi et al., DDL (Zenodo 6459183)]({SOURCE_URL}).")
 st.warning("Metadata-only ingestion. No audio processing, acoustic detection, or calibrated SPL estimates are performed. Verify the dataset's reuse terms before redistribution.")
 st.markdown("The DDL field-recording filenames encode sample class, target bearing, distance, altitude, temperature, sample type, flight session, recording session, and sequence. Upload a **small ZIP subset** of the real field recordings. The app reads filenames only and never extracts audio.")
