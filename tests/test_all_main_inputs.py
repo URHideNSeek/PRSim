@@ -63,7 +63,8 @@ def test_motion_inputs_change_geometry_not_synthetic_pd(field,value):
     changed=replace(scenario,**{field:value})
     a=evaluate(scenario)
     b=evaluate(changed)
-    assert a["motion"]["radial_speed_mps"]!=pytest.approx(b["motion"]["radial_speed_mps"])
+    component="transverse_speed_mps" if field=="speed_mps" else "radial_speed_mps"
+    assert a["motion"][component]!=pytest.approx(b["motion"][component])
     assert scenario_probabilities(scenario,.3)["fused_pd"]==scenario_probabilities(changed,.3)["fused_pd"]
 
 def test_threshold_changes_decision_and_probability():
