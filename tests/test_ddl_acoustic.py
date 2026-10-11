@@ -29,12 +29,14 @@ def test_zip_reads_names_without_extraction():
     buffer=io.BytesIO()
     with zipfile.ZipFile(buffer,"w") as archive:
         archive.writestr("real/"+name(),"not real audio")
-        archive.writestr("real/"+name("XXXX",session="ABC124"),"not real audio")
+        archive.writestr("real/"+name("XXXX",session="ABC123",seq="000002"),"not real audio")
+        archive.writestr("real/"+name("MINI",session="ABC124",seq="000003"),"not real audio")
+        archive.writestr("real/"+name("XXXX",session="ABC124",seq="000004"),"not real audio")
         archive.writestr("notes.txt","ignored")
         archive.writestr("bad.wav","ignored")
     buffer.seek(0)
     rows,rejected=parse_zip_manifest(buffer)
-    assert len(rows)==2 and rejected==["bad.wav"]
+    assert len(rows)==4 and rejected==["bad.wav"]
     report=coverage(rows)
     assert report["ready_for_holdout"]
     assert report["has_both_classes"]
@@ -47,3 +49,18 @@ def test_zip_member_limit():
         archive.writestr(name("XXXX"),"x")
     buffer.seek(0)
     with pytest.raises(ValueError):parse_zip_manifest(buffer,limit=1)
+
+def test_holdout_requires_both_classes_per_independent_session():
+    a=parse_field_filename(name("MINI",session="ABC123"))
+    b=parse_field_filename(name("XXXX",session="ABC124"))
+    report=coverage([a,b])
+    assert not report["ready_for_holdout"]
+    assert report["both_class_sessions"]==0
+
+def test_rejects_oversized_uncompressed_member():
+    buffer=io.BytesIO()
+    with zipfile.ZipFile(buffer,"w") as archive:
+        archive.writestr(name(),b"x"*(25*1024*1024+1),compress_type=zipfile.ZIP_DEFLATED)
+    buffer.seek(0)
+    rows,rejected=parse_zip_manifest(buffer)
+    assert not rows and len(rejected)==1
