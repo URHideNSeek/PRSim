@@ -19,7 +19,7 @@ def wilson_interval(success,total,z=1.96):
     d=1+z*z/total
     c=(p+z*z/(2*total))/d
     h=z*math.sqrt(p*(1-p)/total+z*z/(4*total*total))/d
-    return (max(0,c-h),min(1,c+h))
+    return (0.0 if success==0 else max(0,c-h), 1.0 if success==total else min(1,c+h))
 def parse_labeled_scores(text):
     reader=csv.DictReader(io.StringIO(text))
     if not reader.fieldnames or not set(FIELDS).issubset(reader.fieldnames):
