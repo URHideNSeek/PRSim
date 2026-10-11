@@ -14,6 +14,8 @@ FIELDS=("filename","sample_class","target_present","bearing_deg","range_m",
         "altitude_agl_m","temperature_k","sample_type","flight_session_id",
         "recording_session_id","sequence_id")
 MAX_ARCHIVE_MEMBERS=50000
+MAX_UNCOMPRESSED_WAV_BYTES=25*1024*1024
+MAX_TOTAL_WAV_BYTES=250*1024*1024
 
 def parse_field_filename(filename):
     stem=PurePath(filename.replace("\\","/")).name.rsplit(".",1)[0]
@@ -60,8 +62,13 @@ def parse_zip_manifest(fileobj,limit=MAX_ARCHIVE_MEMBERS):
         members=[i for i in archive.infolist() if not i.is_dir() and i.filename.lower().endswith(".wav")]
         if len(members)>limit:
             raise ValueError(f"Archive has too many WAV members (>{limit})")
+        if sum(m.file_size for m in members)>MAX_TOTAL_WAV_BYTES:
+            raise ValueError("ZIP WAV entries exceed total uncompressed metadata-intake limit")
         valid=[];rejected=[]
         for member in members:
+            if member.file_size>MAX_UNCOMPRESSED_WAV_BYTES:
+                rejected.append(member.filename)
+                continue
             try:valid.append(parse_field_filename(member.filename))
             except ValueError:rejected.append(member.filename)
     return valid,rejected
@@ -76,13 +83,17 @@ def metadata_csv(rows):
 def coverage(rows):
     sessions={r["recording_session_id"] for r in rows}
     real=[r for r in rows if r["sample_type"]=="R"]
+    by_session={}
+    for row in real:
+        by_session.setdefault((row["flight_session_id"],row["recording_session_id"]),set()).add(row["target_present"])
+    both_class_sessions=sum(labels=={0,1} for labels in by_session.values())
     return {
         "files":len(rows),"real_files":len(real),
         "synthetic_files":len(rows)-len(real),
         "target_present":sum(r["target_present"] for r in rows),
         "target_absent":sum(not r["target_present"] for r in rows),
         "recording_sessions":len(sessions),
+        "both_class_sessions":both_class_sessions,
         "has_both_classes":any(r["target_present"] for r in real) and any(not r["target_present"] for r in real),
-        "ready_for_holdout":len({r["recording_session_id"] for r in real})>=2 and
-            any(r["target_present"] for r in real) and any(not r["target_present"] for r in real),
+        "ready_for_holdout":both_class_sessions>=2,
     }
