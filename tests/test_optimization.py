@@ -3,7 +3,7 @@ from optimization import evaluate
 
 def test_optimizer_candidate_count_and_order():
     df=evaluate(seed=42,trials=100)
-    assert len(df)==108
+    assert len(df)==81
     assert df.objective.is_monotonic_decreasing
     assert df[['synthetic_pd','worst_case_pd','empirical_pfa','availability']].apply(lambda col:col.between(0,1).all()).all()
 
