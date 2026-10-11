@@ -5,7 +5,7 @@ from design_closure import seek_goal
 st.set_page_config(page_title="PRSim | Design Space",layout="wide")
 st.title("Goal-Seeking Design Space")
 st.warning("Synthetic sensitivity study only. A closed synthetic goal is not a validated aircraft detection capability.")
-st.markdown("The search starts with the original 108 configurations and expands assumed signal separation only if the goal is not met. It stops when the target is reached or the configured search bounds are exhausted. Repeating identical settings does not create new physical evidence.")
+st.markdown("The search starts with the original 81 configurations and expands assumed signal separation only if the goal is not met. It stops when the target is reached or the configured search bounds are exhausted. Repeating identical settings does not create new physical evidence.")
 
 seed=st.number_input("Random seed",0,999999,42,help="Reproducible random generator seed.")
 trials=st.select_slider("Trials per class and scenario",[100,500,1000,1500,3000,5000],value=1500,help="Monte Carlo target-present and target-absent trials per weather and emission scenario.")
