@@ -5,9 +5,10 @@ import streamlit as st
 from experiment_intake import EXPERIMENTS,template,validate_csv,manifest
 from dataset_validation import evaluate_holdout
 from experiment_protocols import PROTOCOLS
+from experiment_registry import canonical_id, canonical_title
 
 def render_experiment(selected):
-    st.title(selected+" — "+EXPERIMENTS[selected][0])
+    st.title(canonical_title(selected))
     st.caption("Measurement intake; schema checks do not establish calibration or modify the live synthetic model.")
     title,procedure,measurements,instruments,impact=PROTOCOLS[selected]
     st.subheader(title)
@@ -24,12 +25,12 @@ def render_experiment(selected):
             if uploaded.size>10*1024*1024:raise ValueError("Upload exceeds 10 MB")
             rows=validate_csv(selected,uploaded.getvalue().decode("utf-8-sig"))
             st.success(f"Schema valid: {len(rows)} observations. Measurement calibration remains unverified.")
-            st.session_state["intake_"+selected]={"records":len(rows),"filename":uploaded.name,"status":"schema validated; not calibrated"}
+            st.session_state["intake_"+selected]={"records":len(rows),"filename":uploaded.name,"status":"schema validated; not calibrated", "canonical_id":canonical_id(selected)}
             st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
-            st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json",key="manifest_"+selected)
+            st.download_button("Export validated manifest",json.dumps({**manifest(selected,rows,uploaded.name),"legacy_experiment_id":selected,"experiment_id":canonical_id(selected)},indent=2),file_name=selected+"_manifest.json",key="manifest_"+selected)
             st.download_button("Export normalized observations",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv",key="observations_"+selected)
             if selected=="E08":
-                st.subheader("E08 independent score evaluation")
+                st.subheader("E12 independent score evaluation")
                 sensor=st.selectbox("Sensor ID",sorted({r["sensor_id"] for r in rows}),key="e08_sensor")
                 sensor_rows=[r for r in rows if r["sensor_id"]==sensor]
                 sessions=sorted({r["session_id"] for r in sensor_rows})
