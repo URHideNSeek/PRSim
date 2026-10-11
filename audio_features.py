@@ -44,9 +44,13 @@ def wav_features(data):
         value=bytes3[:,0]|(bytes3[:,1]<<8)|(bytes3[:,2]<<16)
         signed=np.where(value & 0x800000,value-0x1000000,value)
         samples=signed.astype(np.float64)/8388608
-    signal=samples.reshape(frames,channels).mean(axis=1)
-    rms=float(np.sqrt(np.mean(signal**2)))
-    peak=float(np.max(np.abs(signal)))
+    channels_data=samples.reshape(frames,channels)
+    channel_rms=np.sqrt(np.mean(channels_data**2,axis=0))
+    channel_peak=np.max(np.abs(channels_data),axis=0)
+    # Analyze channel 1 rather than averaging opposite-phase stereo channels.
+    signal=channels_data[:,0]
+    rms=float(channel_rms[0])
+    peak=float(channel_peak[0])
     # Frequency descriptors from the first second, avoiding unbounded FFT memory.
     segment=signal[:min(frames,rate)]
     spectrum=np.abs(np.fft.rfft(segment*np.hanning(len(segment))))**2
@@ -57,5 +61,7 @@ def wav_features(data):
             "rms_dbfs":round(20*math.log10(max(rms,1e-12)),2),
             "peak_dbfs":round(20*math.log10(max(peak,1e-12)),2),
             "spectral_centroid_hz":round(centroid,1),
+            "per_channel_rms_dbfs":[round(20*math.log10(max(float(x),1e-12)),2) for x in channel_rms],
+            "per_channel_peak_dbfs":[round(20*math.log10(max(float(x),1e-12)),2) for x in channel_peak],
             "clipped_fraction":round(float(np.mean(np.abs(signal)>=.999)),6),
             "status":"Uncalibrated generic audio features, not dB SPL or detection score"}
