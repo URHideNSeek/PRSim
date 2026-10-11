@@ -90,7 +90,7 @@ if geometry["valid"]:
     g2.metric("Idealized Doppler (Hz)",f'{geometry["doppler_hz"]:+.1f}',help="Negative path rate divided by RF wavelength, using a stationary transmitter and receiver. Sign convention is stated in the model.")
 else:
     st.info("Bistatic geometry unavailable: "+geometry["reason"])
-st.warning("Motion and illuminator geometry now affect the idealized path-rate and Doppler outputs. They do NOT change radar/RF/acoustic detection probabilities. A measured noise/clutter and waveform model is still required for defensible motion-dependent detection estimates.")
+st.caption("Motion observables are geometric predictions. For measured motion-dependent detection performance, use the Motion Calibration page. The synthetic probabilities below remain independent of target motion.")
 st.subheader("Illustrative detection probabilities", help="Probabilities are based on the same researcher-defined threshold and an assumed Gaussian model. They are not measured performance.")
 sensor_data = [
     ("Radar", radar, radar_on),
