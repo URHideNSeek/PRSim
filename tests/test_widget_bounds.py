@@ -52,7 +52,7 @@ def test_heading_uses_unique_directions_on_both_pages():
         args,kw=matches[0]
         assert [literals(x) for x in args[1:5]]==[0,345,0,15]
 
-def test_monte_carlo_trial_presets_are_consistent():
+def test_research_validation_trial_presets():
     for path in PAGES[1:2]:
         source=Path(path).read_text(encoding="utf-8")
         assert "[100,500,1000,1500,3000,5000]" in source
