@@ -22,4 +22,4 @@ def test_ui_discloses_motion_probability_limitation():
     src=Path("PRSim.py").read_text(encoding="utf-8")
     assert "Radial ground speed" in src
     assert "Transverse ground speed" in src
-    assert "do NOT change radar/RF/acoustic detection probabilities" in src
+    assert "synthetic probabilities below remain independent of target motion" in src
