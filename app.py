@@ -9,6 +9,7 @@ pages = [
     st.Page("pages/04_Motion_Calibration.py", title="Motion Calibration", icon=":material/analytics:"),
     st.Page("pages/05_Published_Datasets.py", title="Published Datasets", icon=":material/library_books:"),
     st.Page("pages/06_DDL_Acoustic_Intake.py", title="DDL Acoustic Intake", icon=":material/audio_file:"),
+    st.Page("pages/07_Acoustic_Baseline.py", title="Acoustic Baseline", icon=":material/graphic_eq:"),
 ]
 navigation = st.navigation(pages)
 navigation.run()
