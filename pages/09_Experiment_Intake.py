@@ -33,7 +33,9 @@ for tab,selected in zip(tabs,EXPERIMENTS):
                 st.download_button("Export normalized observations",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv",key="observations_"+selected)
                 if selected=="E08":
                     st.subheader("E08 independent score evaluation")
-                    sessions=sorted({r["session_id"] for r in rows})
+                    sensor=st.selectbox("Sensor ID",sorted({r["sensor_id"] for r in rows}),key="e08_sensor")
+                sensor_rows=[r for r in rows if r["sensor_id"]==sensor]
+                sessions=sorted({r["session_id"] for r in sensor_rows})
                     if len(sessions)>1:
                         holdout=st.selectbox("Held-out session",sessions,key="e08_holdout")
                         pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05,key="e08_pfa")
