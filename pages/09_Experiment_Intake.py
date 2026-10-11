@@ -27,15 +27,15 @@ for tab,selected in zip(tabs,EXPERIMENTS):
                 if uploaded.size>10*1024*1024:raise ValueError("Upload exceeds 10 MB")
                 rows=validate_csv(selected,uploaded.getvalue().decode("utf-8-sig"))
                 st.success(f"Schema valid: {len(rows)} observations. Measurement calibration remains unverified.")
-            st.session_state["intake_"+selected]={"records":len(rows),"filename":uploaded.name,"status":"schema validated; not calibrated"}
+                st.session_state["intake_"+selected]={"records":len(rows),"filename":uploaded.name,"status":"schema validated; not calibrated"}
                 st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
                 st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json",key="manifest_"+selected)
                 st.download_button("Export normalized observations",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv",key="observations_"+selected)
                 if selected=="E08":
                     st.subheader("E08 independent score evaluation")
                     sensor=st.selectbox("Sensor ID",sorted({r["sensor_id"] for r in rows}),key="e08_sensor")
-                sensor_rows=[r for r in rows if r["sensor_id"]==sensor]
-                sessions=sorted({r["session_id"] for r in sensor_rows})
+                    sensor_rows=[r for r in rows if r["sensor_id"]==sensor]
+                    sessions=sorted({r["session_id"] for r in sensor_rows})
                     if len(sessions)>1:
                         holdout=st.selectbox("Held-out session",sessions,key="e08_holdout")
                         pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05,key="e08_pfa")
@@ -44,7 +44,7 @@ for tab,selected in zip(tabs,EXPERIMENTS):
                                 scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in sensor_rows if r["available"]=="1"]
                                 report=evaluate_holdout(scores,pfa,holdout)
                                 st.session_state["validation_e08"]={**report,"source":"E08","scope":"available observations; session-held-out","sensor_id":sensor}
-                            a,b=st.columns(2)
+                                a,b=st.columns(2)
                                 a.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
                                 b.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
                                 st.download_button("Export E08 evaluation",json.dumps(report,indent=2),file_name="E08_evaluation.json",key="e08_export")
