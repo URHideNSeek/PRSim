@@ -83,3 +83,11 @@ The **DDL Acoustic Intake** page reads filenames from a small ZIP subset (maximu
 Source: https://zenodo.org/records/6459183 . The complete record lists approximately 12.6 GB of real data and 4.6 GB of synthesized data. Review reuse permissions and confirm that filenames in the selected archive match the published convention. Do not upload the full archive to Streamlit Cloud.
 
 Next: select a permitted subset containing drone and background recordings from independent sessions; verify metadata; build and validate an acoustic feature-extraction and classification pipeline with holdout recordings. Avoid claiming calibrated SPL or range-based detection from filename metadata alone.
+
+## DDL audio feature inspection and uncertainty reporting
+
+The DDL Acoustic Intake page can optionally read at most 20 real WAV files from an uploaded ZIP subset and extract **uncalibrated** RMS dBFS, peak dBFS, spectral centroid, clipping fraction, duration and sample rate. It supports bounded uncompressed integer PCM WAV (mono/stereo, 8/16/24/32-bit). A 25 MB/file and 30-second duration cap limits memory use. Exported features preserve class labels, distance, bearing, flight and recording-session identifiers. **dBFS is not dB SPL**, and these generic features are not a trained detector or a detection probability.
+
+The Published Datasets page now reports 95% Wilson confidence intervals for held-out detection and false-alarm fractions. These intervals assume independent trials; adjacent clips and correlated observations can violate that assumption. No public dataset recordings have been downloaded, added to GitHub, or used to calibrate PRSim.
+
+The next work depends on acquiring a legally usable subset of real recordings and verifying its actual filename format, labels, microphone setup and license. A validated acoustic detector requires a documented score algorithm, separate sessions for training and evaluation, and independent replication.
