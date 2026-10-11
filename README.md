@@ -101,3 +101,17 @@ The next work depends on acquiring a legally usable subset of real recordings an
 - All related regression tests have been committed, but CI and live Streamlit operation must be verified before release.
 
 **External-data dependency:** No licensed DDL audio has yet been ingested or evaluated. Actual acoustic detection performance cannot be claimed until source licensing, microphone conditions, labeling, independent sessions, and validation have been confirmed.
+
+## Experimental acoustic baseline and offline workflow
+
+The **Acoustic Baseline** page accepts a CSV of real recording features and performs a transparent two-feature standardized linear benchmark (RMS dBFS and spectral centroid), with training-only normalization/threshold and a separate recording-session holdout. It reports held-out detection and false-alarm fractions and Wilson intervals. This is an **exploratory benchmark**, not a calibrated drone detector or an operational detection probability. A session-held-out split alone cannot rule out correlated flights, repeated source recordings, domain shifts, or label errors.
+
+For larger legally usable DDL subsets, run locally:
+
+```bash
+python scripts/extract_ddl_features.py path/to/ddl_subset.zip acoustic_features.csv --max-files 500
+```
+
+This extracts bounded generic features from real PCM WAV recordings and preserves class, range, bearing and session provenance. The CLI refuses to overwrite existing output. Upload the resulting CSV to the Acoustic Baseline page. Do not commit source audio or private/restricted recordings to GitHub.
+
+**Known blockers:** We have not obtained, inspected, or licensed a real DDL subset; the published filename convention has not been verified against actual files in this environment; no baseline has been trained on real data. End-to-end Streamlit execution and passing CI remain unverified. Once real data are available, validate metadata parsing first, then evaluate on independent recording and flight sessions, document uncertainty, and compare results with a held-out baseline.
