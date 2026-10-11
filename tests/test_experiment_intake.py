@@ -26,7 +26,11 @@ def test_pages_parse_and_navigation_is_consolidated():
         ast.parse(Path(path).read_text(encoding="utf-8"))
     navigation=Path("app.py").read_text(encoding="utf-8")
     assert "08_Research_Evidence.py" in navigation
-    assert "09_Experiment_Intake.py" in navigation
+    assert "E01_Microphone_Characterization.py" in navigation
+    assert "E08_Multisensor_Evaluation.py" in navigation
+    assert "E09 · Motion Calibration" in navigation
+    assert "E10 · DDL Acoustic Intake" in navigation
+    assert "E11 · Acoustic Baseline" in navigation
     assert "References & Datasets" in navigation
     assert "05_Published_Datasets.py" not in navigation
     assert "03_Evidence_Calibration.py" not in navigation
