@@ -91,3 +91,13 @@ The DDL Acoustic Intake page can optionally read at most 20 real WAV files from 
 The Published Datasets page now reports 95% Wilson confidence intervals for held-out detection and false-alarm fractions. These intervals assume independent trials; adjacent clips and correlated observations can violate that assumption. No public dataset recordings have been downloaded, added to GitHub, or used to calibrate PRSim.
 
 The next work depends on acquiring a legally usable subset of real recordings and verifying its actual filename format, labels, microphone setup and license. A validated acoustic detector requires a documented score algorithm, separate sessions for training and evaluation, and independent replication.
+
+## Acoustic intake hardening and quality gates
+
+- ZIP metadata ingestion rejects oversized uncompressed WAV members (25 MB each) and archives with more than 250 MB total uncompressed WAV content, even if ZIP compression makes the upload appear small.
+- The metadata coverage gate now requires at least two separate flight/recording sessions each containing real target-present and real background samples. This is a preliminary structural gate, not a proof of statistical independence.
+- WAV features are computed separately for each channel to avoid cancellation when stereo channels are opposite in phase. Features remain uncalibrated dBFS and spectral descriptors, not SPL or drone classification scores.
+- Empirical holdout evaluation now requires at least `ceil(1 / requested_Pfa)` training background observations (minimum 20). At a 1% target Pfa this means at least 100 background observations. This minimum is a coarse guardrail, not enough to establish precise low false-alarm rates.
+- All related regression tests have been committed, but CI and live Streamlit operation must be verified before release.
+
+**External-data dependency:** No licensed DDL audio has yet been ingested or evaluated. Actual acoustic detection performance cannot be claimed until source licensing, microphone conditions, labeling, independent sessions, and validation have been confirmed.
