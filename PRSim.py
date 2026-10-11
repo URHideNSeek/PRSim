@@ -71,18 +71,24 @@ if finding:
     st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
     st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
-st.subheader("Individual sensor evidence and illustrative detection probability", help="Probabilities are calculated at the same researcher-selected evidence threshold using an assumed Gaussian score distribution. They are not calibrated from physical sensor data.")
-c1, c2, c3 = st.columns(3)
-for col, name, score, enabled in [
-    (c1, "Radar", radar, radar_on),
-    (c2, "RF", rf, rf_on and emits),
-    (c3, "Acoustic", acoustic, acoustic_on),
-]:
-    col.metric(f"{name} evidence", f"{score:.2f}", help="Normalized synthetic evidence score (0–1). This number is NOT itself a detection probability.")
-    pd_demo = synthetic_detection_probability(score, threshold=threshold, enabled=enabled)
-    col.metric(f"{name} detection probability (synthetic)", "N/A" if pd_demo is None else f"{pd_demo:.1%}",
-        help="Illustrative probability of exceeding the selected evidence threshold, assuming Gaussian score uncertainty (standard deviation 0.20). Not a validated detection estimate; N/A means disabled or no observable emissions.")
-st.metric("Illustrative false-alarm probability (all sensors)", f"{synthetic_false_alarm_probability(threshold):.1%}", help="Probability of a background-only Gaussian score exceeding the same selected evidence threshold. This is a synthetic assumption, not a measured false-alarm rate.")
+st.subheader("Illustrative detection probabilities", help="Probabilities are based on the same researcher-defined threshold and an assumed Gaussian model. They are not measured performance.")
+sensor_data = [
+    ("Radar", radar, radar_on),
+    ("RF", rf, rf_on and emits),
+    ("Acoustic", acoustic, acoustic_on),
+]
+pcols = st.columns(4)
+for col, (name, score, enabled) in zip(pcols[:3], sensor_data):
+    probability = synthetic_detection_probability(score, threshold=threshold, enabled=enabled)
+    col.metric(f"{name} detection probability", "N/A" if probability is None else f"{probability:.1%}",
+        help="Illustrative probability of exceeding the selected evidence threshold. Gaussian score standard deviation = 0.20; not validated. N/A means the modality is disabled or the target has no observable emissions.")
+pcols[3].metric("False-alarm probability", f"{synthetic_false_alarm_probability(threshold):.1%}",
+    help="Illustrative probability that background-only evidence exceeds the selected threshold. Not a measured false-alarm rate.")
+st.subheader("Sensor evidence", help="Normalized synthetic evidence scores from 0 to 1, not probabilities.")
+ecols = st.columns(3)
+for col, (name, score, enabled) in zip(ecols, sensor_data):
+    col.metric(f"{name} evidence", f"{score:.2f}" if enabled else "N/A",
+        help="Normalized synthetic evidence score. Not a calibrated signal measurement or detection probability.")
 st.caption("Shared threshold model: background score N(0, 0.20²), target-present score N(sensor evidence, 0.20²). Raising the threshold lowers both synthetic detection and false-alarm probabilities. This assumed model is not calibrated; actual detection probability remains unknown.")
 st.subheader("Five comparative outputs", help="Radar-only versus fused results. These are simplified indicators, not field measurements.")
 st.dataframe(results, use_container_width=True)
