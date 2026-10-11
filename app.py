@@ -9,6 +9,7 @@ pages = [
     st.Page("pages/E02_Aircraft_Acoustics.py", title="E02 · Aircraft Acoustics", icon=":material/science:"),
     st.Page("pages/E03_Passive_RF_Background.py", title="E03 · Passive RF Background", icon=":material/science:"),
     st.Page("pages/E04_Receiver_and_Reference.py", title="E04 · Receiver and Reference", icon=":material/science:"),
+    st.Page("pages/09_Controlled_RF.py", title="Controlled RF Lab", icon=":material/tune:"),
     st.Page("pages/E05_Radar_Background_and_Clutter.py", title="E05 · Radar Background and Clutter", icon=":material/science:"),
     st.Page("pages/E06_Target_Geometry_and_Motion.py", title="E06 · Target Geometry and Motion", icon=":material/science:"),
     st.Page("pages/E07_Environmental_Characterization.py", title="E07 · Environmental Characterization", icon=":material/science:"),
