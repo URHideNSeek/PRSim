@@ -40,3 +40,19 @@ def test_unsupported_bytes_rejected():
 
 def test_long_duration_rejected():
     with pytest.raises(ValueError):wav_features(pcm_wav(seconds=31))
+
+def test_opposite_phase_stereo_does_not_cancel():
+    rate=16000
+    t=np.arange(rate//4)/rate
+    left=np.round(.3*np.sin(2*np.pi*500*t)*32767).astype("<i2")
+    stereo=np.column_stack((left,-left)).astype("<i2").ravel()
+    buffer=io.BytesIO()
+    with wave.open(buffer,"wb") as wf:
+        wf.setnchannels(2)
+        wf.setsampwidth(2)
+        wf.setframerate(rate)
+        wf.writeframes(stereo.tobytes())
+    result=wav_features(buffer.getvalue())
+    assert result["rms_dbfs"]>-20
+    assert len(result["per_channel_rms_dbfs"])==2
+    assert result["per_channel_rms_dbfs"][0]==pytest.approx(result["per_channel_rms_dbfs"][1],abs=.01)
