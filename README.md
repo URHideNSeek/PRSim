@@ -67,3 +67,11 @@ Main-page per-modality synthetic Pd now uses conditional Gaussian-score probabil
 The duplicate normalized radar clutter/interference slider was removed from the main UI; the remaining reflected clutter CNR (dB) control still uses an uncalibrated mapping. The legacy model field remains for backward compatibility and test coverage, fixed to zero by the main UI. The top-level threshold decision remains a deterministic heuristic and should not be conflated with these statistical probabilities.
 
 Scientific integration of the main and Monte Carlo models, measured false-alarm statistics, and field calibration remain outstanding.
+
+## Published dataset registry and empirical evaluation
+
+The **Published Datasets** Streamlit page catalogs external acoustic, radar RCS, RF, and atmospheric references in `data/dataset_registry.json`. No raw external datasets are checked into this repository, and license/measurement applicability reviews are still required.
+
+A new `dataset_validation.py` evaluator accepts independently supplied CSV rows with `session_id,target_present,detector_score`, selects a decision threshold using training-session target-absent observations only, and computes target-present detection and target-absent false-alarm fractions on a separate held-out session. This is an initial validation workflow, not physical calibration. It deliberately does not change the main page's synthetic Pd values. For defensible use, ensure detector scores, ground truth, session independence, environmental conditions, and confidence intervals are documented.
+
+Sources: https://zenodo.org/records/6459183 ; https://zenodo.org/records/15405530 ; https://github.com/kitoweeknd/RFUAV ; ITU-R P.838-3 and P.676-13.
