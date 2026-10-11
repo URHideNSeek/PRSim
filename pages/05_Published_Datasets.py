@@ -31,6 +31,9 @@ if file is not None:
         b.metric("Held-out false-alarm fraction",f"{report['holdout_pfa']:.1%}")
         c.metric("Training threshold",f"{report['threshold']:.3f}")
         st.caption(f"Training background observations: {report['training_background']}; held-out target observations: {report['holdout_targets']}; held-out background observations: {report['holdout_background']}.")
+        pd_lo,pd_hi=report["holdout_pd_ci95"]
+        fa_lo,fa_hi=report["holdout_pfa_ci95"]
+        st.caption(f"95% Wilson interval — detection: {pd_lo:.1%}–{pd_hi:.1%}; false alarm: {fa_lo:.1%}–{fa_hi:.1%}. Assumes independent trials.")
         st.info(report["note"])
         st.download_button("Download evaluation JSON",json.dumps(report,indent=2),file_name="prsim_holdout_report.json",mime="application/json")
     except (UnicodeError,ValueError) as exc:
