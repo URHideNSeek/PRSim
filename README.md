@@ -143,3 +143,9 @@ Experiment Intake now has separate E01–E08 tabs. Each includes purpose, collec
 Motion Calibration and Acoustic Baseline now include collection instructions and downloadable CSV templates; DDL Acoustic Intake includes its source-recording protocol. No user uploads are persisted as a durable server-side dataset by this implementation. A validated import means the CSV passed schema checks, not that its measurements are calibrated or statistically representative.
 
 The main dashboard explicitly reports that the actual-data adjustment to synthetic Pd is **none** until a documented calibration and scenario applicability check can justify a replacement. All reported empirical held-out rates must retain sensor, session, population, and uncertainty context.
+
+## Numbered validation navigation (E01–E11)
+
+Each validation experiment is a separate Streamlit navigation page rather than a nested tab. E01 Microphone Characterization, E02 Aircraft Acoustics, E03 Passive RF Background, E04 Receiver and Reference, E05 Radar Background and Clutter, E06 Target Geometry and Motion, E07 Environmental Characterization, E08 Multisensor Evaluation. The existing specialist pages continue the sequence: E09 Motion Calibration, E10 DDL Acoustic Intake, E11 Acoustic Baseline.
+
+The E01–E08 pages reuse `experiment_pages.render_experiment` to preserve protocols, instruments, CSV templates, upload validation, and E08 held-out evaluation. The retired combined intake page was deleted. Existing model data and synthetic probability assumptions were not changed.
