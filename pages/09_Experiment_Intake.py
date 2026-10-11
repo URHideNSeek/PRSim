@@ -9,40 +9,42 @@ from experiment_protocols import PROTOCOLS
 st.set_page_config(page_title="PRSim | Experiment Intake",layout="wide")
 st.title("Experimental Data Intake")
 st.caption("Collect and validate E01–E08 measurement records. Schema checks do not establish calibration or update the live synthetic model.")
-selected=st.selectbox("Experiment",list(EXPERIMENTS),format_func=lambda key:key+" — "+EXPERIMENTS[key][0])
-title,procedure,measurements,instruments,impact=PROTOCOLS[selected]
-st.subheader(title)
-st.write("Collection procedure:",procedure)
-st.write("Measurements:",measurements)
-st.write("Instruments:",instruments)
-st.info("Main-page impact: "+impact)
-st.write("Suggested measurement devices:",EXPERIMENTS[selected][1])
-st.write("Required CSV fields:",", ".join(EXPERIMENTS[selected][2]))
-st.download_button("Download CSV template",template(selected),file_name=selected+"_template.csv",mime="text/csv")
-uploaded=st.file_uploader("Upload observations CSV",type=["csv"])
-if uploaded is not None:
-    try:
-        if uploaded.size>10*1024*1024:raise ValueError("Upload exceeds 10 MB")
-        rows=validate_csv(selected,uploaded.getvalue().decode("utf-8-sig"))
-        st.success(f"Schema valid: {len(rows)} observations. Measurement calibration remains unverified.")
-        st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
-        st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json")
-        st.download_button("Export normalized observations",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv")
-        if selected=="E08":
-            st.subheader("E08 independent score evaluation")
-            sessions=sorted({r["session_id"] for r in rows})
-            if len(sessions)>1:
-                holdout=st.selectbox("Held-out session",sessions)
-                pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05)
-                if st.button("Evaluate held-out scores"):
-                    try:
-                        scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in rows if r["available"]=="1"]
-                        report=evaluate_holdout(scores,pfa,holdout)
-                        a,b=st.columns(2)
-                        a.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
-                        b.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
-                        st.download_button("Export E08 evaluation",json.dumps(report,indent=2),file_name="E08_evaluation.json")
-                    except ValueError as exc:st.error(str(exc))
-            else:st.info("At least two independent sessions required for E08 evaluation.")
-    except (ValueError,UnicodeError) as exc:
-        st.error(str(exc))
+tabs=st.tabs([key+" — "+EXPERIMENTS[key][0] for key in EXPERIMENTS])
+for tab,selected in zip(tabs,EXPERIMENTS):
+    with tab:
+        title,procedure,measurements,instruments,impact=PROTOCOLS[selected]
+        st.subheader(title)
+        st.write("Collection procedure:",procedure)
+        st.write("Measurements:",measurements)
+        st.write("Instruments:",instruments)
+        st.info("Main-page impact: "+impact)
+        st.write("Suggested measurement devices:",EXPERIMENTS[selected][1])
+        st.write("Required CSV fields:",", ".join(EXPERIMENTS[selected][2]))
+        st.download_button("Download CSV template",template(selected),file_name=selected+"_template.csv",mime="text/csv",key="template_"+selected)
+        uploaded=st.file_uploader("Upload observations CSV",type=["csv"],key="upload_"+selected)
+        if uploaded is not None:
+            try:
+                if uploaded.size>10*1024*1024:raise ValueError("Upload exceeds 10 MB")
+                rows=validate_csv(selected,uploaded.getvalue().decode("utf-8-sig"))
+                st.success(f"Schema valid: {len(rows)} observations. Measurement calibration remains unverified.")
+                st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
+                st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json",key="manifest_"+selected)
+                st.download_button("Export normalized observations",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv",key="observations_"+selected)
+                if selected=="E08":
+                    st.subheader("E08 independent score evaluation")
+                    sessions=sorted({r["session_id"] for r in rows})
+                    if len(sessions)>1:
+                        holdout=st.selectbox("Held-out session",sessions,key="e08_holdout")
+                        pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05,key="e08_pfa")
+                        if st.button("Evaluate held-out scores",key="e08_run"):
+                            try:
+                                scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in rows if r["available"]=="1"]
+                                report=evaluate_holdout(scores,pfa,holdout)
+                                a,b=st.columns(2)
+                                a.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
+                                b.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
+                                st.download_button("Export E08 evaluation",json.dumps(report,indent=2),file_name="E08_evaluation.json",key="e08_export")
+                            except ValueError as exc:st.error(str(exc))
+                    else:st.info("At least two independent sessions required for E08 evaluation.")
+            except (ValueError,UnicodeError) as exc:
+                st.error(str(exc))
