@@ -49,3 +49,7 @@ def test_holdout_report_includes_confidence_intervals():
     report=evaluate_holdout(rows(),.05,"holdout")
     assert "holdout_pd_ci95" in report
     assert "holdout_pfa_ci95" in report
+
+def test_one_percent_false_alarm_requires_more_background_samples():
+    with pytest.raises(ValueError,match="100 training background"):
+        evaluate_holdout(rows(),.01,"holdout")
