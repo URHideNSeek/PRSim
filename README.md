@@ -115,3 +115,9 @@ python scripts/extract_ddl_features.py path/to/ddl_subset.zip acoustic_features.
 This extracts bounded generic features from real PCM WAV recordings and preserves class, range, bearing and session provenance. The CLI refuses to overwrite existing output. Upload the resulting CSV to the Acoustic Baseline page. Do not commit source audio or private/restricted recordings to GitHub.
 
 **Known blockers:** We have not obtained, inspected, or licensed a real DDL subset; the published filename convention has not been verified against actual files in this environment; no baseline has been trained on real data. End-to-end Streamlit execution and passing CI remain unverified. Once real data are available, validate metadata parsing first, then evaluate on independent recording and flight sessions, document uncertainty, and compare results with a held-out baseline.
+
+## Goal-seeking Design Space closure
+
+The Design Space page now has a bounded staged search with a researcher-defined desired mean synthetic Pd (50–99%), false-alarm target, Monte Carlo trial count, and maximum of three stages. Each stage evaluates 81 configurations, expanding assumed radar/RF/acoustic signal separation only when the target is not met. It terminates with either `closed_synthetic` (a candidate met both the mean Pd goal and finite-sample false-alarm tolerance) or `not_feasible_within_bounds` (the search was exhausted). It reports stages, best candidate, gap to goal, and a downloadable candidate CSV.
+
+**Important:** Expanded signal separation represents assumed statistical distinguishability, not automatically achievable hardware quality. A synthetic goal closure is not proof of real-world detection. Meeting mean Pd does not guarantee meeting worst-case Pd, and a false-alarm tolerance of max(1 percentage point, 2/trials) is a finite-sample screening allowance rather than a validated statistical confidence bound. No indefinite optimization or fabricated convergence is used.
