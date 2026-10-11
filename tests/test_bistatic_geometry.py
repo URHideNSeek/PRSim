@@ -50,4 +50,4 @@ def test_ui_explains_motion_not_connected_to_detection_probability():
     src=Path("PRSim.py").read_text(encoding="utf-8")
     assert "bistatic_observables" in src
     assert "Idealized Doppler" in src
-    assert "They do NOT change radar/RF/acoustic detection probabilities" in src
+    assert "The synthetic probabilities below remain independent of target motion." in src
