@@ -155,3 +155,17 @@ The E01–E08 pages reuse `experiment_pages.render_experiment` to preserve proto
 Run `python scripts/generate_sample_uploads.py` to create 11 **synthetic test-only** files under `sample_uploads/`: E01–E08 experiment CSVs, E09 motion CSV, E10 DDL-format WAV ZIP, and E11 acoustic feature CSV. Run `python -m pytest -q tests/test_sample_uploads.py` to exercise the actual CSV/ZIP parsers, manifests, E08 held-out evaluator, motion data validator, WAV feature extractor, and acoustic baseline evaluator. The test fixtures are intentionally fabricated and must not be used as field evidence.
 
 **Verification boundary:** Source-level and parser smoke tests do not prove the Streamlit browser upload widgets or cloud deployment work. Those require an independent end-to-end browser test. No live sensor probability calibration is implied.
+
+## Sample upload regression campaign
+
+Run `python scripts/generate_sample_uploads.py` from the repository root to create **synthetic test files** for E01–E11 in `sample_uploads/`. Run `python -m pytest -q tests/` to exercise each experiment schema, malformed uploads, E08 held-out score evaluation, E09 motion validation, E10 ZIP/WAV intake, E11 acoustic baseline, and main-model input/output behavior. The generator does not fetch or upload any external data.
+
+Test categories:
+- Every E01–E08 CSV schema: valid fixture, required fields, invalid numeric values, nonfinite values, invalid binary labels, and negative measurements where disallowed.
+- E08: held-out evaluation with sufficient target-present/background samples.
+- E09: two-session motion calibration coverage.
+- E10: safe ZIP manifest parsing, real WAV extraction, and format validation.
+- E11: independent-session acoustic feature evaluation.
+- Main page: input-to-output response, documented motion-only parameters, threshold behavior, and disabled modalities.
+
+These are **automated parsing and model tests**, not browser-driven uploads, field validation, or proof of deployed Streamlit availability. Actual GitHub Actions results must be checked separately.
