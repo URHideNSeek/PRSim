@@ -65,10 +65,12 @@ def evaluate(s:Scenario):
           "Availability index (0–1)":round(availability,3)}
     # Ground speed is horizontal; heading is relative to the sensor-target line:
     # 0° away, 90° transverse, 180° toward, 270° transverse. No illuminator bearing is known.
+    radial_speed=s.speed_mps*math.cos(math.radians(s.heading_deg))
+    transverse_speed=s.speed_mps*math.sin(math.radians(s.heading_deg))
     # The speed/heading fields are intentionally not mapped to detection evidence until
     # bistatic geometry and motion-response data are available.
     return {"radar":radar,"rf":rf,"acoustic":audio,"fused":fused,
-            "motion":{"speed_mps":s.speed_mps,"heading_deg":s.heading_deg,"speed_definition":"horizontal ground speed","heading_reference":"sensor-target line, 0 away, 180 toward","model_status":"not calibrated"},
+            "motion":{"speed_mps":s.speed_mps,"heading_deg":s.heading_deg,"radial_speed_mps":radial_speed,"transverse_speed_mps":transverse_speed,"speed_definition":"horizontal ground speed","heading_reference":"sensor-target line, 0 away, 180 toward","model_status":"not calibrated"},
             "radar_metrics":measures(radar,radar_avail),
             "fused_metrics":measures(fused,fused_avail),
             "detected":fused>=s.threshold}
