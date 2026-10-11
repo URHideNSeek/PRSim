@@ -1,10 +1,16 @@
 """Research-only acoustic baseline from independently supplied WAV features."""
 import json
 import streamlit as st
+from experiment_protocols import EXTRA
 from acoustic_baseline import parse_feature_csv,evaluate_acoustic_baseline
 
 st.set_page_config(page_title="PRSim | Acoustic Baseline",layout="wide")
 st.title("Acoustic Feature Baseline")
+protocol=EXTRA["baseline"]
+st.markdown("**Collection procedure:** "+protocol[1])
+st.markdown("**Required data:** "+protocol[2])
+st.markdown("**Instruments:** "+protocol[3])
+st.info("Main-page probability impact: "+protocol[4])
 st.warning("Exploratory benchmark only. The model is not calibrated for actual microphone sensitivity, drone detection range, or field probability of detection.")
 st.markdown("Upload the **WAV feature inspection CSV** exported from DDL Acoustic Intake, or an equivalent dataset of measured recordings. Required columns: `recording_session_id`, `target_present`, `rms_dbfs`, `spectral_centroid_hz`. Include independent real recording sessions with target-present and target-absent clips. The 20-file DDL preview limit usually will not provide enough training observations; use a separately processed and validated dataset for this benchmark.")
 uploaded=st.file_uploader("Upload acoustic features CSV",type=["csv"],help="Only permitted, nonrestricted recordings. No raw audio is needed for this evaluation.")
