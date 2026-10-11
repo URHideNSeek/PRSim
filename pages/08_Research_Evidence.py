@@ -1,56 +1,35 @@
+"""Traceable research references, source material and datasets for PRSim."""
 import json
-from pathlib import Path
 import pandas as pd
 import streamlit as st
-from experiment_intake import EXPERIMENTS,template,validate_csv,manifest
-from dataset_validation import evaluate_holdout
+from reference_catalog import REFERENCES
 
-st.set_page_config(page_title="PRSim | Research Evidence",layout="wide")
-st.title("Research Evidence & Collaboration")
-tabs=st.tabs(["Published datasets","Evidence & collaboration","Experiment intake"])
-with tabs[0]:
-    sources=json.loads(Path("data/dataset_registry.json").read_text(encoding="utf-8"))
-    st.dataframe(pd.DataFrame(sources)[["name","modality","download_status","license_status"]],hide_index=True)
-    source=st.selectbox("Dataset",sources,format_func=lambda x:x["name"])
-    st.markdown(f"[Open source]({source['url']})")
-    st.write(source["limitations"])
-with tabs[1]:
-    st.markdown("This research tool requires independent measurements, documented calibration, provenance, uncertainty, and reviewer feedback.")
-    st.markdown("[Academic review brief](https://github.com/URHideNSeek/PRSim/blob/main/docs/ACADEMIC_REVIEW_BRIEF.md)")
-    st.info("Physical models and experimental validation remain incomplete. Published methods do not automatically validate detection probabilities.")
-with tabs[2]:
-    st.subheader("E01–E08 measurement intake")
-    selected=st.selectbox("Experiment",list(EXPERIMENTS),format_func=lambda key:key+" — "+EXPERIMENTS[key][0])
-    st.write("Suggested equipment:",EXPERIMENTS[selected][1])
-    st.write("Required columns:",", ".join(EXPERIMENTS[selected][2]))
-    st.download_button("CSV template",template(selected),file_name=selected+"_template.csv",mime="text/csv")
-    uploaded=st.file_uploader("Upload observations CSV",type=["csv"])
-    if uploaded is not None:
-        try:
-            if uploaded.size>10*1024*1024:raise ValueError("Upload exceeds 10 MB")
-            rows=validate_csv(selected,uploaded.getvalue().decode("utf-8-sig"))
-            st.success(f"Schema valid: {len(rows)} rows. Calibration not established.")
-            st.dataframe(pd.DataFrame(rows).head(200),hide_index=True)
-            st.download_button("Export validated manifest",json.dumps(manifest(selected,rows,uploaded.name),indent=2),file_name=selected+"_manifest.json")
-            st.download_button("Export normalized CSV",pd.DataFrame(rows).to_csv(index=False),file_name=selected+"_observations.csv")
-            if selected=="E08":
-                st.subheader("E08 independent evaluation")
-                sessions=sorted({r["session_id"] for r in rows})
-                if len(sessions)>1:
-                    holdout=st.selectbox("Held-out session",sessions)
-                    pfa=st.select_slider("Target false-alarm fraction",[.01,.02,.05,.10,.20],value=.05)
-                    if st.button("Evaluate held-out scores"):
-                        try:
-                            scores=[(r["session_id"],int(r["target_present"]),float(r["detector_score"])) for r in rows if r["available"]=="1"]
-                            report=evaluate_holdout(scores,pfa,holdout)
-                            st.metric("Held-out detection fraction",f'{report["holdout_pd"]:.1%}')
-                            st.metric("Held-out false-alarm fraction",f'{report["holdout_pfa"]:.1%}')
-                            st.download_button("Export evaluation",json.dumps(report,indent=2),file_name="E08_evaluation.json")
-                        except ValueError as exc:
-                            st.error(str(exc))
-                else:
-                    st.info("Multiple independent sessions required.")
+st.set_page_config(page_title="PRSim | References & Datasets",layout="wide")
+st.title("Publications, References & Datasets")
+st.markdown("This page documents the scientific publications, technical standards, statistical methods, external datasets, and **internal assumptions** behind PRSim. A citation is not proof that its equations or measurements have been integrated.")
+st.info("Current detection evidence and probabilities are synthetic. No external dataset has yet been used to calibrate the live PRSim detection model.")
 
-        except (ValueError,UnicodeError) as exc:
-            st.error(str(exc))
-st.caption("The intake checks schema and provenance only. It does not modify synthetic probabilities.")
+areas=["All"]+sorted({r["area"] for r in REFERENCES})
+kinds=["All"]+sorted({r["kind"] for r in REFERENCES})
+left,right=st.columns(2)
+area=left.selectbox("Research area",areas,help="Filter references by sensing modality or methodology.")
+kind=right.selectbox("Source type",kinds,help="Separate published standards and datasets from internal modeling assumptions.")
+items=[r for r in REFERENCES if (area=="All" or r["area"]==area) and (kind=="All" or r["kind"]==kind)]
+st.metric("References shown",len(items))
+for record in items:
+    with st.container(border=True):
+        st.markdown(f"**[{record['title']}]({record['url']})**")
+        st.caption(f"{record['kind']} · {record['area']} · {record['status']}")
+        st.write("How PRSim uses it:",record["use"])
+        st.write("Implementation:",record["location"])
+        st.write("Limitations:",record["limitation"])
+
+st.subheader("Evidence maturity")
+summary=pd.DataFrame([{"Source":r["title"],"Category":r["kind"],"Status":r["status"],"Code reference":r["location"]} for r in REFERENCES])
+st.dataframe(summary,hide_index=True,use_container_width=True)
+st.download_button("Export reference catalog (CSV)",summary.to_csv(index=False),file_name="prsim_reference_catalog.csv",mime="text/csv")
+st.download_button("Export reference catalog (JSON)",json.dumps(REFERENCES,indent=2),file_name="prsim_reference_catalog.json",mime="application/json")
+
+st.subheader("Research documentation")
+st.markdown("[Academic review brief](https://github.com/URHideNSeek/PRSim/blob/main/docs/ACADEMIC_REVIEW_BRIEF.md) · [Scientific remediation register](https://github.com/URHideNSeek/PRSim/blob/main/docs/SCIENTIFIC_REMEDIATION.md) · [PRSim source repository](https://github.com/URHideNSeek/PRSim)")
+st.caption("Source and implementation statuses describe repository code, not an independent literature audit. Licensing and applicability of external datasets must be checked before use.")
