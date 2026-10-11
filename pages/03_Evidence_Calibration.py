@@ -18,7 +18,7 @@ with a:
     path_km=st.number_input("Illuminated path length (km)",min_value=0.0,max_value=100.0,value=.5,step=.1,help="The relevant radio propagation path, not necessarily the receiver-to-aircraft distance.")
 with b:
     temp=st.number_input("Air temperature (°C)",min_value=-50.,max_value=60.,value=20.,step=1.)
-    pressure=st.number_input("Atmospheric pressure (hPa)",min_value=500.,max_value=1100.,value=1013.25,step=1.)
+    pressure=st.number_input("Atmospheric pressure (hPa)",min_value=500.,max_value=1100.,value=1013.25,step=.25)
     vapor=st.number_input("Water vapor density (g/m³)",min_value=0.,max_value=40.,value=7.5,step=.5)
     wind=st.number_input("Wind speed (m/s)",min_value=0.,max_value=60.,value=0.,step=1.)
 st.subheader("2. Model provenance")
