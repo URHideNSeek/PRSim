@@ -52,7 +52,8 @@ with st.sidebar:
     st.header("Stereo acoustic")
     acoustic_on = st.checkbox("Enable stereo acoustic", True, help="Include or exclude evidence from two microphones listening for aircraft sounds.")
     microphone_quality = st.slider("Microphone quality index", 0., 1., .75, .05, help="Combined simplified microphone performance. Higher improves synthetic acoustic evidence.")
-    mic_spacing = st.slider("Microphone spacing (m)", .05, 1.5, .35, .05, help="Distance between the two microphones. Here it changes a directional-evidence factor; it does not directly measure aircraft distance.")
+    mic_spacing_mm = st.select_slider("Microphone spacing (mm)", options=[round(inches * 25.4, 1) for inches in range(1, 19)], value=round(6 * 25.4, 1), help="Distance between microphone centers, in millimeters. Choose from 1 inch (25.4 mm) to 18 inches (457.2 mm), in 1-inch (25.4 mm) increments. The current directional-evidence relationship is illustrative, not a calibrated array model.")
+    st.caption(f"Microphone separation: {mic_spacing_mm / 25.4:.0f} in")
     audio_noise = st.slider("Background sound index", 0., 1., .3, .05, help="Other sounds such as traffic and machinery. Higher background noise reduces synthetic acoustic evidence.")
     wind_noise = st.slider("Microphone wind-noise index", 0., 1., .2, .05, help="Noise caused by wind around the microphones. Higher wind noise reduces synthetic acoustic evidence.")
     channel_sync = st.slider("Channel synchronization quality", 0., 1., .9, .05, help="How closely the two microphone channels agree in timing. Higher improves synthetic acoustic evidence.")
@@ -63,7 +64,7 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
     clutter=0.0,radar_noise=radar_noise,bandwidth=bandwidth,rf_on=rf_on,
     rf_sensitivity=rf_sensitivity,rf_interference=rf_interference,rf_coverage=rf_coverage,
     rf_noise=rf_noise,acoustic_on=acoustic_on,microphone_quality=microphone_quality,
-    mic_spacing=mic_spacing,audio_noise=audio_noise,wind_noise=wind_noise,channel_sync=channel_sync)
+    mic_spacing=mic_spacing_mm / 1000.0,audio_noise=audio_noise,wind_noise=wind_noise,channel_sync=channel_sync)
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
