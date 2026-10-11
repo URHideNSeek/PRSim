@@ -6,6 +6,9 @@ import streamlit as st
 st.set_page_config(page_title="PRSim Research Validation",layout="wide")
 st.title("PRSim | Monte Carlo Research Validation")
 st.warning("Synthetic statistical demonstration only. No calibrated physical detection model or verified SAR/GMTI performance.")
+st.markdown("""**What is this page for?** Use it to study how detection thresholds, sensor quality, availability, shared background noise and fusion assumptions affect a repeatable Monte Carlo experiment. It helps researchers compare algorithm behavior and identify assumptions worth measuring. It does **not** predict whether a specific aircraft will be detected in the field.
+
+**How to interpret results:** A target-present trial is one where the synthetic target signal was injected; a target-absent trial contains only synthetic background. Each sensor produces a random score, and a threshold selected from target-absent scores is applied to the target-present trials. Changing the random seed reproduces or changes the sampled experiment, not the real environment.""")
 with st.sidebar:
     st.header("Scenario")
     weather=st.selectbox("Weather",list(WEATHER),help="Synthetic weather scenario, not measured attenuation.")
@@ -78,7 +81,8 @@ preview=evaluate_scenario(Scenario(weather=weather,rcs_m2=rcs_m2,emits=rf_emits,
 st.subheader("Scenario preview — separate heuristic model")
 st.metric("Synthetic fused evidence index",format(preview["fused"],".3f"),help="Illustrative score computed using weather, RCS, RF emissions, acoustic dB and distance; not a measured detection probability.")
 st.caption("The scenario preview responds to the selected target inputs. Monte Carlo results below remain an independent synthetic statistical demonstration and DO NOT incorporate these target inputs into the random distributions.")
-st.subheader("1. Detection probability at a controlled false-alarm threshold")
+st.subheader("1. Detection and false alarms")
+st.caption("Synthetic Pd = fraction of target-present trials detected. Empirical Pfa = fraction of target-absent trials triggering an alert. Confidence intervals describe finite Monte Carlo sampling uncertainty, not model accuracy. Availability = fraction of simulated opportunities with an active sensor.")
 st.dataframe(results,use_container_width=True,hide_index=True)
 pdet=results.iloc[-1]["Synthetic Pd"]
 pfa=results.iloc[-1]["Empirical Pfa"]
@@ -86,9 +90,11 @@ cprob1,cprob2=st.columns(2)
 cprob1.metric("Synthetic detection probability (fusion)",f"{pdet:.1%}",help="Fraction of target-present synthetic trials above the decision threshold. Not validated for this aircraft or motion.")
 cprob2.metric("Synthetic false-alarm probability (fusion)",f"{pfa:.1%}",help="Fraction of target-absent synthetic trials above the decision threshold. Not a field-measured false-alarm rate.")
 st.caption("95% Wilson intervals represent Monte Carlo sampling uncertainty only. Pfa may differ from the requested value when sensors are unavailable.")
-st.subheader("2. Receiver operating characteristic")
+st.subheader("2. Receiver operating characteristic (ROC)")
+st.caption("Each point shows detection fraction versus false-alarm fraction as the decision threshold varies. Curves toward the upper-left indicate better discrimination under these synthetic assumptions; the chart is not a measured receiver ROC.")
 st.line_chart(pd.DataFrame(curves).pivot_table(index="False alarm",columns="Configuration",values="Detection"))
 st.subheader("3–5. Latency, tracking uncertainty and availability")
+st.caption("Latency proxy is an illustrative inverse relationship to detection fraction, not measured detection time. Tracking uncertainty proxy = 1 − synthetic Pd, not position or velocity error. Availability is the fraction of trials with usable simulated sensor observations. These different units should not be compared as equivalent magnitudes.")
 st.bar_chart(results.set_index("Configuration")[["Latency proxy (s)","Tracking uncertainty proxy","Availability"]])
 delta=results.iloc[-1]["Synthetic Pd"]-results.iloc[0]["Synthetic Pd"]
 st.subheader("Finding")
