@@ -170,23 +170,23 @@ Test categories:
 
 These are **automated parsing and model tests**, not browser-driven uploads, field validation, or proof of deployed Streamlit availability. Actual GitHub Actions results must be checked separately.
 
-## Recommended experiment execution order (October 2026)
+## Canonical experiment sequence (October 2026)
 
-All experiment navigation labels follow `E## · Experiment Name`. **E-numbers are persistent experiment/data identifiers, not chronological step numbers.** Their original IDs are intentionally retained to protect CSV schemas, saved manifests, and existing tests. The Streamlit navigation is ordered by the recommended dependencies:
+New experiment numbers are chronological execution IDs. Legacy file paths and CSV parser keys remain available through `experiment_registry.py`; imported manifests expose canonical IDs while retaining the legacy identifier for provenance. Older saved data should not be silently reinterpreted.
 
-| Step | Experiment | Prerequisite / purpose |
+| ID | Experiment | Internal legacy key |
 | --- | --- | --- |
-| 1 | E04 · Receiver and Reference | Establish instrument timing, gain, and reference-channel behavior |
-| 2 | E12 · Controlled RF Characterization | Validate known, conducted RF stimuli and receiver measurements |
-| 3 | E03 · Passive RF Background | Record ambient target-absent RF background independently |
-| 4 | E01 · Microphone Characterization | Calibrate audio channels before collecting acoustic evidence |
-| 5 | E10 · DDL Acoustic Intake | Inspect provenance and ingest licensed reference recordings |
-| 6 | E11 · Acoustic Baseline | Evaluate independent background and holdout audio sessions |
-| 7 | E07 · Environmental Characterization | Establish synchronized environmental logging before field runs |
-| 8 | E02 · Aircraft Acoustics | Capture separately labeled, authorized target/background recordings |
-| 9 | E05 · Radar Background and Clutter | Characterize background and known references |
-| 10 | E06 · Target Geometry and Motion | Validate surveyed geometry and synchronization |
-| 11 | E09 · Motion Calibration | Compare measured motion observables against modeled geometry |
-| 12 | E08 · Multisensor Evaluation | Independently evaluate synchronized held-out multisensor observations |
+| E01 | Receiver and Reference | E04 |
+| E02 | Controlled RF Characterization | CONTROLLED_RF |
+| E03 | Passive RF Background | E03 |
+| E04 | Microphone Characterization | E01 |
+| E05 | DDL Acoustic Intake | DDL |
+| E06 | Acoustic Baseline | ACOUSTIC_BASELINE |
+| E07 | Environmental Characterization | E07 |
+| E08 | Aircraft Acoustics | E02 |
+| E09 | Radar Background and Clutter | E05 |
+| E10 | Target Geometry and Motion | E06 |
+| E11 | Motion Calibration | MOTION |
+| E12 | Multisensor Evaluation | E08 |
 
-Some instrument and environmental preparations can proceed in parallel; final E08 evaluation depends on adequate independent measurements. Controlled RF source measurements are **not** equivalent to passive illumination. A schema-valid upload or a sample-count gate is not evidence of a calibrated detector.
+The Controlled RF page stores validated measurements in the active Streamlit session; the PRSim main page displays their frequency, measured mean baseline receiver power, and number of baseline observations against the selected simulator frequency. This **does not change** radar evidence or detection/false-alarm probability. Power and timing measurements require calibration and a defensible transfer model before any likelihood adjustment. The page has no hardware communications, data persistence across browser sessions, or real-time streaming.
