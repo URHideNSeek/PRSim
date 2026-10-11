@@ -1,4 +1,5 @@
 from model import Scenario, evaluate
+from bistatic_geometry import Geometry, bistatic_observables
 from probability_demo import synthetic_detection_probability, synthetic_false_alarm_probability
 import pandas as pd
 import streamlit as st
@@ -25,6 +26,10 @@ with st.sidebar:
     range_m = st.select_slider("Target distance from sensor (m)", options=list(range(0, 501, 25)), value=250, help="Separation between aircraft and sensor, from 0 to 500 m in 25 m steps. Greater distance reduces synthetic evidence; 0 m is a mathematical endpoint.")
     speed_mps = st.slider("Target ground speed (m/s)", 0, 50, 0, 1, help="Horizontal speed over the ground, from 0 to 50 m/s. This excludes vertical climb or descent. Stored for future motion studies; not yet used in detection calculations.")
     heading_deg = st.slider("Target heading relative to sensor (degrees)", 0, 345, 0, 15, help="Direction of horizontal travel relative to the sensor-to-target line: 0° moves directly away from the sensor, 90° moves across its line of sight, and 180° moves directly toward it. This is not a compass bearing. 345° is the last unique 15° step; 360° equals 0°. Passive bistatic radar also requires illuminator geometry.")
+    st.header("Idealized bistatic geometry")
+    illuminator_distance_m = st.number_input("Illuminator distance from sensor (m)",min_value=1.0,max_value=100000.0,value=2000.0,step=100.0,help="Distance from the external RF illuminator to the passive radar receiver. This is a geometric research input, not measured coverage.")
+    illuminator_bearing_deg = st.slider("Illuminator bearing relative to target line (degrees)",0,345,90,15,help="Direction from receiver to illuminator measured counterclockwise from receiver-to-target line. This is not target heading.")
+    illuminator_frequency_ghz = st.number_input("Illuminator frequency (GHz)",min_value=8.0,max_value=12.0,value=10.0,step=0.1,help="External illuminator carrier frequency used for idealized Doppler calculation. Actual waveform availability and spectral characteristics are not modeled.")
     st.header("Field test article")
     observation = st.slider("Observation window (s)", 1, 60, 10, help="How long the simulated system listens during an observation. This affects the latency proxy, not physical detection probability.")
     update = st.slider("Measurement update interval (s)", 0.1, 5.0, 1.0, 0.1, help="Time between simulated sensor updates. A larger interval increases the latency proxy.")
@@ -68,7 +73,17 @@ motion=out["motion"]
 motion_cols=st.columns(2)
 motion_cols[0].metric("Radial ground speed (m/s)",f'{motion["radial_speed_mps"]:+.2f}',help="Ground-speed component along the sensor-to-target line. Positive means moving away; negative means moving toward the sensor. This is geometry, not radar Doppler.")
 motion_cols[1].metric("Transverse ground speed (m/s)",f'{motion["transverse_speed_mps"]:+.2f}',help="Ground-speed component perpendicular to the sensor-to-target line. Sign distinguishes opposite transverse directions.")
-st.warning("Motion inputs are not yet part of the detection-probability model. Speed and heading change the motion components above, but radar/RF/acoustic probabilities remain unchanged until a validated bistatic measurement model is available.")
+geometry=bistatic_observables(Geometry(target_range_m=range_m,speed_mps=speed_mps,heading_deg=heading_deg,
+    illuminator_distance_m=illuminator_distance_m,illuminator_bearing_deg=illuminator_bearing_deg,
+    frequency_ghz=illuminator_frequency_ghz))
+st.subheader("Idealized passive bistatic motion observables",help="Derived from transmitter/target/receiver positions and target ground velocity. This is a geometric calculation, not a detection-performance model.")
+if geometry["valid"]:
+    g1,g2=st.columns(2)
+    g1.metric("Bistatic path rate (m/s)",f'{geometry["path_rate_mps"]:+.2f}',help="Time derivative of transmitter-to-target plus target-to-receiver path length.")
+    g2.metric("Idealized Doppler (Hz)",f'{geometry["doppler_hz"]:+.1f}',help="Negative path rate divided by RF wavelength, using a stationary transmitter and receiver. Sign convention is stated in the model.")
+else:
+    st.info("Bistatic geometry unavailable: "+geometry["reason"])
+st.warning("Motion and illuminator geometry now affect the idealized path-rate and Doppler outputs. They do NOT change radar/RF/acoustic detection probabilities. A measured noise/clutter and waveform model is still required for defensible motion-dependent detection estimates.")
 st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
 threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
 finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
