@@ -13,6 +13,8 @@ st.markdown("The DDL field-recording filenames encode sample class, target beari
 uploaded=st.file_uploader("Upload a ZIP containing DDL WAV files",type=["zip"],help="Start with a small permitted subset. Streamlit Cloud is not intended for the complete 12.6 GB real-data archive.")
 if uploaded is not None:
     try:
+        if uploaded.size > 100 * 1024 * 1024:
+            raise ValueError("ZIP subset exceeds the 100 MB metadata-intake limit. Use a smaller subset.")
         rows,rejected=parse_zip_manifest(io.BytesIO(uploaded.getvalue()))
         report=coverage(rows)
         c1,c2,c3=st.columns(3)
