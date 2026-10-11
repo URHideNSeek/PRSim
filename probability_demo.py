@@ -25,3 +25,20 @@ def synthetic_false_alarm_probability(threshold=0.30):
     if not 0 <= threshold <= 1:
         raise ValueError("Threshold must be in [0, 1]")
     return _survival(threshold, 0.0)
+
+def availability_adjusted_probability(evidence, threshold=0.30, availability=1.0, enabled=True):
+    """Illustrative unconditional Pd: probability available × conditional Pd.
+
+    Assumes zero detection opportunity during outage and independence of
+    availability and the synthetic score distribution. Not field-calibrated.
+    """
+    if not 0 <= availability <= 1:
+        raise ValueError("Availability must be in [0, 1]")
+    conditional=synthetic_detection_probability(evidence,threshold,enabled)
+    return None if conditional is None else availability*conditional
+
+def availability_adjusted_false_alarm_probability(threshold=0.30, availability=1.0):
+    """Illustrative probability of an alert per observation opportunity."""
+    if not 0 <= availability <= 1:
+        raise ValueError("Availability must be in [0, 1]")
+    return availability*synthetic_false_alarm_probability(threshold)
