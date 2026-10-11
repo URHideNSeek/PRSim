@@ -68,6 +68,13 @@ scenario = Scenario(weather=weather,rcs_m2=rcs_m2,clutter_cnr_db=clutter_cnr_db,
 out=evaluate(scenario)
 radar,rf,acoustic,fused=out["radar"],out["rf"],out["acoustic"],out["fused"]
 results=pd.DataFrame({"Radar only":out["radar_metrics"],"Fused":out["fused_metrics"]})
+st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
+threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
+finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
+if finding:
+    st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
+else:
+    st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
 st.caption(f"Motion scenario: ground speed {speed_mps} m/s, relative heading {heading_deg}° (0° away; 180° toward sensor).")
 motion=out["motion"]
 motion_cols=st.columns(2)
@@ -84,13 +91,6 @@ if geometry["valid"]:
 else:
     st.info("Bistatic geometry unavailable: "+geometry["reason"])
 st.warning("Motion and illuminator geometry now affect the idealized path-rate and Doppler outputs. They do NOT change radar/RF/acoustic detection probabilities. A measured noise/clutter and waveform model is still required for defensible motion-dependent detection estimates.")
-st.subheader("Synthetic detection decision", help="This is a threshold check of illustrative evidence, not an observed aircraft detection or calibrated probability.")
-threshold = st.slider("Researcher-defined evidence threshold", .05, .95, .30, .05, help="Minimum synthetic fused evidence score needed for a YES finding. Higher thresholds make YES less likely.")
-finding = evaluate(__import__("dataclasses").replace(scenario,threshold=threshold))["detected"]
-if finding:
-    st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
-else:
-    st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
 st.subheader("Illustrative detection probabilities", help="Probabilities are based on the same researcher-defined threshold and an assumed Gaussian model. They are not measured performance.")
 sensor_data = [
     ("Radar", radar, radar_on),
