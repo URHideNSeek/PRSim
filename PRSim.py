@@ -104,6 +104,22 @@ if measured:
     st.metric("E08 held-out measured detection fraction",f'{measured["holdout_pd"]:.1%}')
     st.metric("E08 held-out measured false-alarm fraction",f'{measured["holdout_pfa"]:.1%}')
     st.caption("Measured results are specific to sensor "+str(measured.get("sensor_id","unknown"))+" and held-out session "+str(measured["holdout_session"])+". They are not directly comparable to the selected synthetic scenario without matching conditions and calibration.")
+controlled=st.session_state.get("controlled_rf_intake")
+st.subheader("E02 — Controlled RF measurements versus simulation")
+if controlled:
+    measured_rows=controlled.get("rows", [])
+    summary=controlled.get("summary", {})
+    st.metric("Imported RF records", controlled.get("records", 0))
+    st.metric("Baseline records", summary.get("baseline_samples", 0))
+    if summary.get("mean_power_dbm") is not None:
+        st.metric("Observed baseline mean receiver power (dBm)", f'{summary["mean_power_dbm"]:.2f}')
+    if measured_rows:
+        frequencies=sorted({float(row["frequency_hz"])/1e9 for row in measured_rows})
+        st.write("Measured source frequencies (GHz):", frequencies)
+        st.write("Simulator geometry frequency (GHz):", illuminator_frequency_ghz)
+        st.info("Frequency comparison is descriptive. Receiver power and synchronization from E02 do NOT update radar evidence, Pd, or Pfa without calibrated transfer functions and independent validation.")
+else:
+    st.caption("No E02 controlled RF measurements imported; open E02 and upload a CSV to compare measurements.")
 st.info("Actual-data adjustment to main-page Pd: none. Calibration and applicability review are required before replacing synthetic probabilities.")
 st.subheader("Sensor evidence", help="Normalized synthetic evidence scores from 0 to 1, not probabilities.")
 ecols = st.columns(3)
