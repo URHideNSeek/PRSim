@@ -1,4 +1,5 @@
 from model import Scenario, evaluate
+from probability_demo import synthetic_detection_probability, FALSE_ALARM_RATE
 import pandas as pd
 import streamlit as st
 
@@ -70,10 +71,18 @@ if finding:
     st.success(f"**SYNTHETIC THRESHOLD MET — YES** | Target distance: {range_m:,} m | Evidence: {fused:.3f} ≥ threshold {threshold:.2f}")
 else:
     st.error(f"**SYNTHETIC THRESHOLD MET — NO** | Target distance: {range_m:,} m | Evidence: {fused:.3f} < threshold {threshold:.2f}")
+st.subheader("Individual sensor evidence and illustrative detection probability", help="Probabilities below come from an assumed Gaussian noise model at 5% false-alarm rate. They are not calibrated from physical sensor data.")
 c1, c2, c3 = st.columns(3)
-c1.metric("Radar evidence", f"{radar:.2f}", help="Normalized synthetic radar signal score, from zero to one. Not a measured detection probability.")
-c2.metric("RF evidence", f"{rf:.2f}", help="Normalized synthetic evidence from aircraft radio emissions. It is zero if the aircraft emits no RF.")
-c3.metric("Acoustic evidence", f"{acoustic:.2f}", help="Normalized synthetic evidence from microphone measurements. Not a measured sound-detection range.")
+for col, name, score, enabled in [
+    (c1, "Radar", radar, radar_on),
+    (c2, "RF", rf, rf_on and emits),
+    (c3, "Acoustic", acoustic, acoustic_on),
+]:
+    col.metric(f"{name} evidence", f"{score:.2f}", help="Normalized synthetic evidence score (0–1). This number is NOT itself a detection probability.")
+    pd_demo = synthetic_detection_probability(score, enabled=enabled)
+    col.metric(f"{name} detection probability (synthetic)", "N/A" if pd_demo is None else f"{pd_demo:.1%}",
+        help="Illustrative probability using a fixed Gaussian signal/noise assumption and 5% target false-alarm rate. Not a validated detection estimate; N/A means the modality is disabled or has no observable target emission.")
+st.caption("Probability model: background N(0,1), target-present N(3 × evidence,1), 5% one-sided false-alarm threshold. These are assumed distributions, not measured data. Actual detection probability remains unknown.")
 st.subheader("Five comparative outputs", help="Radar-only versus fused results. These are simplified indicators, not field measurements.")
 st.dataframe(results, use_container_width=True)
 st.caption("Output guide: Detection evidence = normalized synthetic score; latency = illustrative time proxy; tracking uncertainty = confidence proxy; environmental retention = assumed weather resilience; availability = modeled uptime. These are not measured sensor performance.")
@@ -81,6 +90,6 @@ st.caption("Hover over the ⓘ icons next to the selectors and results for plain
 st.subheader("Evidence comparison", help="Visual comparison of radar-only and fused synthetic evidence scores.")
 st.bar_chart(pd.DataFrame({"Radar only": [radar], "Radar + RF + stereo audio": [fused]}, index=["Synthetic score"]).T)
 
-st.info("Actual aircraft detection: NOT DETERMINED. Calibrated probability of detection and false-alarm probability: NOT AVAILABLE on this page. Use Research Validation for separately simulated Monte Carlo estimates.")
+st.info("Actual aircraft detection: NOT DETERMINED. The probabilities above are illustrative Gaussian-model outputs, not calibrated sensor performance. Research Validation contains a separate synthetic Monte Carlo study.")
 st.caption("No target-emission RF credit when RF is disabled. Stereo audio does not independently establish range. RCS in m² and clutter CNR in dB are converted to scores using heuristic equations, not validated physics. SAR and GMTI remain unimplemented.")
 st.download_button("Export scenario results CSV", results.to_csv().encode(), file_name="prsim_results.csv", mime="text/csv", help="Download the displayed synthetic result table as a CSV file.")
