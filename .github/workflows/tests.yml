@@ -12,5 +12,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install -r requirements.txt pytest
-      - run: python -m pytest -q tests/
-      - run: python -m compileall -q app.py PRSim.py model.py pages/
+      - name: Compile all Python sources
+        run: python -m compileall -q .
+      - name: Run regression and sample upload tests
+        run: python -m pytest -q tests/
