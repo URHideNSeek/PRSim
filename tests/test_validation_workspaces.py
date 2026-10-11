@@ -10,10 +10,13 @@ def test_every_experiment_has_collection_protocol():
         assert len(protocol)==5
         assert all(isinstance(field,str) and field.strip() for field in protocol)
 
-def test_eight_tabs_and_unique_upload_keys():
-    src=Path("pages/09_Experiment_Intake.py").read_text(encoding="utf-8")
+def test_eleven_numbered_navigation_pages():
+    navigation=Path("app.py").read_text(encoding="utf-8")
+    for i in range(1,12):
+        assert f"E{i:02d} ·" in navigation
+    assert "09_Experiment_Intake.py" not in navigation
+    src=Path("experiment_pages.py").read_text(encoding="utf-8")
     ast.parse(src)
-    assert "st.tabs(" in src
     assert 'key="upload_"+selected' in src
     assert 'key="template_"+selected' in src
     assert "sensor_rows" in src
