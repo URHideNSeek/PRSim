@@ -11,6 +11,15 @@ import math
 import numpy as np
 
 FIELDS=("session_id","target_present","detector_score")
+
+def wilson_interval(success,total,z=1.96):
+    """95% binomial Wilson interval for independent trials (assumption)."""
+    if total<=0: raise ValueError("Total must be positive")
+    p=success/total
+    d=1+z*z/total
+    c=(p+z*z/(2*total))/d
+    h=z*math.sqrt(p*(1-p)/total+z*z/(4*total*total))/d
+    return (max(0,c-h),min(1,c+h))
 def parse_labeled_scores(text):
     reader=csv.DictReader(io.StringIO(text))
     if not reader.fieldnames or not set(FIELDS).issubset(reader.fieldnames):
@@ -50,9 +59,12 @@ def evaluate_holdout(rows,target_pfa=.05,holdout_session=None):
     threshold=float(np.quantile(background,1-target_pfa))
     hits=sum(score>threshold for score in target)
     alarms=sum(score>threshold for score in negative)
+    pd_interval=wilson_interval(hits,len(target))
+    pfa_interval=wilson_interval(alarms,len(negative))
     return {"holdout_session":holdout_session,"training_background":len(background),
             "holdout_targets":len(target),"holdout_background":len(negative),
             "threshold":threshold,"holdout_pd":hits/len(target),
             "holdout_pfa":alarms/len(negative),
+            "holdout_pd_ci95":pd_interval,"holdout_pfa_ci95":pfa_interval,
             "target_pfa":target_pfa,
-            "note":"Empirical holdout statistics only; not transferable to other hardware or environments."}
+            "note":"Empirical holdout statistics only. Wilson intervals assume independent trials; adjacent clips can violate this. Not transferable to other hardware or environments."}
