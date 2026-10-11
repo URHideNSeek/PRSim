@@ -53,8 +53,9 @@ def evaluate_holdout(rows,target_pfa=.05,holdout_session=None):
     background=[score for _,label,score in train if label==0]
     target=[score for _,label,score in test if label==1]
     negative=[score for _,label,score in test if label==0]
-    if len(background)<20 or not target or not negative:
-        raise ValueError("Need >=20 training background scores and both classes in holdout session")
+    required_background=max(20,math.ceil(1/target_pfa))
+    if len(background)<required_background or not target or not negative:
+        raise ValueError(f"Need at least {required_background} training background scores at this false-alarm target, plus both classes in the held-out session")
     # Empirical quantile; do not fit or tune on holdout data.
     threshold=float(np.quantile(background,1-target_pfa))
     hits=sum(score>threshold for score in target)
