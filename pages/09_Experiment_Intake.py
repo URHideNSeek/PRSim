@@ -4,11 +4,18 @@ import pandas as pd
 import streamlit as st
 from experiment_intake import EXPERIMENTS,template,validate_csv,manifest
 from dataset_validation import evaluate_holdout
+from experiment_protocols import PROTOCOLS
 
 st.set_page_config(page_title="PRSim | Experiment Intake",layout="wide")
 st.title("Experimental Data Intake")
 st.caption("Collect and validate E01–E08 measurement records. Schema checks do not establish calibration or update the live synthetic model.")
 selected=st.selectbox("Experiment",list(EXPERIMENTS),format_func=lambda key:key+" — "+EXPERIMENTS[key][0])
+title,procedure,measurements,instruments,impact=PROTOCOLS[selected]
+st.subheader(title)
+st.write("Collection procedure:",procedure)
+st.write("Measurements:",measurements)
+st.write("Instruments:",instruments)
+st.info("Main-page impact: "+impact)
 st.write("Suggested measurement devices:",EXPERIMENTS[selected][1])
 st.write("Required CSV fields:",", ".join(EXPERIMENTS[selected][2]))
 st.download_button("Download CSV template",template(selected),file_name=selected+"_template.csv",mime="text/csv")
