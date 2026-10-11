@@ -5,7 +5,7 @@ import csv
 import io
 
 st.set_page_config(page_title="PRSim | Motion Calibration",layout="wide")
-st.title("Motion Detection Calibration")
+st.title("E09 — Motion Calibration")
 protocol=EXTRA["motion"]
 st.markdown("**Collection procedure:** "+protocol[1])
 st.markdown("**Required data:** "+protocol[2])
