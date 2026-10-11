@@ -39,18 +39,20 @@ if uploaded is not None:
             st.caption("Use recording-session separation to reduce leakage. Confirm that adjacent segments from the same flight or source recording do not appear in both training and holdout data.")
             st.divider()
             st.subheader("Experimental WAV feature inspection")
-            st.caption("This optional operation reads up to 20 real WAV recordings from the uploaded ZIP and extracts generic uncalibrated audio features. It does not train a drone detector or calculate detection probability.")
+            st.caption("This optional operation reads up to 20 real WAV recordings from the uploaded ZIP and extracts generic uncalibrated audio features alongside recording metadata. It does not train a drone detector or calculate detection probability.")
             if st.button("Extract generic WAV features (max 20)",help="Inspect RMS dBFS, peak dBFS, spectral centroid, clipping, sample rate, and duration. No calibration to dB SPL."):
                 features=[]
                 errors=[]
                 with zipfile.ZipFile(io.BytesIO(uploaded.getvalue())) as archive:
-                    real_names={r["filename"] for r in rows if r["sample_type"]=="R"}
+                    real_meta={r["filename"]:r for r in rows if r["sample_type"]=="R"}
+                    real_names=set(real_meta)
                     candidates=[member for member in archive.infolist() if member.filename in real_names and member.file_size<=MAX_WAV_BYTES]
                     for member in candidates[:20]:
                         try:
                             with archive.open(member) as stream:
                                 wav=stream.read(MAX_WAV_BYTES+1)
-                            features.append({"filename":member.filename,**wav_features(wav)})
+                            meta=real_meta[member.filename]
+                            features.append({"filename":member.filename,"target_present":meta["target_present"],"sample_class":meta["sample_class"],"range_m":meta["range_m"],"bearing_deg":meta["bearing_deg"],"flight_session_id":meta["flight_session_id"],"recording_session_id":meta["recording_session_id"],**wav_features(wav)})
                         except (ValueError,EOFError,zipfile.BadZipFile) as exc:
                             errors.append(f"{member.filename}: {exc}")
                 if features:
